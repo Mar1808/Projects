@@ -1,0 +1,19 @@
+int test(int a[], int b[]) {
+    return 1;
+}
+
+int t2(int a, int b, int c[]){
+    return 0;
+}
+
+int main(void) {
+    int tab[2], t2;
+    int t1, t22[2];
+    int tab2[2];
+    tab[10] = tab[5/2];
+
+    if(tab) {
+        return 0;
+    }
+    return test(1, tab2);
+}

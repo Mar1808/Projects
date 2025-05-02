@@ -1,0 +1,7 @@
+int main(void) {
+    char tab[99];
+    int tabInt[99];
+    tab['a'] = 1;
+    tabInt['a'] = tab['a'];
+    return tab['a'];
+}

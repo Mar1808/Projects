@@ -1,0 +1,14 @@
+int main(void) {
+    int a;
+    a = 0;
+    if(a) {
+        return -a;
+    } else {
+        if(a == 1) {
+            return main(/*void*/);: {
+
+            }
+        }
+    }
+    return 0;
+}

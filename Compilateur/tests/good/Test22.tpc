@@ -1,0 +1,11 @@
+int test(int a[]) {
+    return test(a);
+}
+
+int main(void) {
+    int t[2];
+    int a;
+    int b;
+    t[1] = getint() + 1;
+    return getint();
+}

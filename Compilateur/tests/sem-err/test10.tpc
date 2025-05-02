@@ -1,0 +1,9 @@
+void test(void) {
+    return ;
+}
+
+int main(void) {
+    int a;
+    a = test();  //test type void
+    return 0;
+}

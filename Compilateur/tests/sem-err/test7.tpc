@@ -1,0 +1,10 @@
+// fonction et adresse globale avec meme nom
+int a;
+
+int a(void) {
+    return 1;
+}
+
+int main(void) {
+    return 2;
+}

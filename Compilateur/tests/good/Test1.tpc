@@ -1,0 +1,14 @@
+int t(int c, int b) {
+    return 1+2;
+}
+
+int main(void) {
+    /*Un test parmis tant d'autre */
+    // /* 
+    /* /* 
+    OK;;
+    */
+    int a;
+    a = t(1, 2);
+    return 1 + 2;
+}

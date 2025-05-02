@@ -1,0 +1,15 @@
+int i;
+
+int tab(int tabI[], int i) {
+    return tabI[1];
+}
+
+int main(void) {
+    int tabI[5];
+    i =  0;
+    while(i<5) {
+        tabI[i] = tab(tabI, i);
+        i = i + 1;
+    }
+    return tabI[0];
+}

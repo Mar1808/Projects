@@ -1,0 +1,17 @@
+int c;
+
+// La fonction de comparaison
+int comparaison(int n1, int n2) {
+    return n1;
+}
+
+int main(void) {
+    int a;
+    a = comparaison(1, 2);
+    if(0 == 0) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}

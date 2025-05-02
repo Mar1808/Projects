@@ -1,0 +1,42 @@
+char tabC[1];
+int  tabI[9];
+/*
+int getint;
+int putint;
+int getchar;
+int putchar;
+*/
+
+int b;
+
+int f1(int tab[]) {
+    return tab[0];
+}
+
+int f2(int tabint[], char tabchar[]) {
+    return tabint[0];
+}
+
+void f3(char c) {
+    if(c > 10) {
+        return;
+    } 
+    c = c + tabI[0];
+}
+
+int f4(int a) {
+    return getint();
+}
+
+
+int main(void) {
+    int tabI2[5];
+    char tabC2[5];
+   /* int a;
+    int b;
+    int getchar[5];*/
+    tabC[5] = f1(tab[-1]);
+    a = f4(getint());
+    getchar[5] = 5;
+    return 0;
+}

@@ -1,0 +1,9 @@
+char a;
+int days[2];
+int test(void) {
+    return test();
+}
+
+int main(void) {
+    return main(1);
+}

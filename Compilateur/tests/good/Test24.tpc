@@ -1,0 +1,8 @@
+int aux(char tab[]) {
+    return tab[1];
+}
+
+int main(void) {
+    char tab[5];
+    return aux(tab);
+}

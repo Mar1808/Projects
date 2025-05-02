@@ -1,0 +1,13 @@
+int main(void) {
+    int a;
+    a = 2;
+    if(a == 2) {
+        putchar('o');
+        putchar('k');
+        putchar('\n');
+    }
+    else {
+        putchar('n');
+    }
+    return 0;
+}

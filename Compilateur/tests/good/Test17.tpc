@@ -1,0 +1,7 @@
+// affichage de nombre négatif
+int main(void) {
+    char a;
+    a = getchar();
+    putchar(a);
+    return 1 - 1;
+}

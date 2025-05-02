@@ -1,0 +1,6 @@
+int main(void) {
+    int tab[2];
+    char c[5];
+    c[1] = tab[1];
+    return 0;
+}

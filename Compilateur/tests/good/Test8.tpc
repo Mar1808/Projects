@@ -1,0 +1,10 @@
+int print(char c) {
+    return c;
+}
+
+int main(void) {
+    print('\0');
+    print('\t');
+    print('\n');
+    return 0;
+}

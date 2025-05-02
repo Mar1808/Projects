@@ -1,0 +1,16 @@
+int test(int tab[]) {
+    return 0;
+}
+
+int v(int a, int c) {
+    return a+v;
+}
+
+int main(void) {
+    int tab[5];
+    int a;
+    //tab();
+    a = v(tab[1], tab[4]);
+    //test(tab[1] - tab());
+    return a;
+}

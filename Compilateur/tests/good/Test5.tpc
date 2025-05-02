@@ -1,0 +1,16 @@
+int tab[12];
+
+void bissextile(int duration[], int size) {
+    int now, span;
+    int days[10], n[5];
+    now = 10;
+    span = 2;
+    days[5] = duration[(now+span)%12];
+    days[2] = duration['2'];
+    /*return days;*/
+}
+
+int main(void) {
+    bissextile(tab, 12);
+    return 0;
+}

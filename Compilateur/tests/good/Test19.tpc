@@ -1,0 +1,11 @@
+int addition(int a, int b) {
+    return a + b;
+}
+
+int main(void) {
+    int a;
+    int b;
+    int c;
+    a = addition(2, 3);
+    return a + c+ b+a+a+a+a+a;
+}

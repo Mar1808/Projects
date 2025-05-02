@@ -1,0 +1,16 @@
+// erreur de type provoque warning
+char test(int a, int b) {
+    if(1 == 1) {
+        return 'a';
+    }
+    else {
+        return 'a';
+    }
+}
+
+int main(void) {
+    int a;
+    a = 97;
+    test(a, 'a');
+    return 'z';
+}

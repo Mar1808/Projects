@@ -1,0 +1,9 @@
+int test(int a) {
+    return test(a - 1);
+}
+
+int main(void) {
+    int a;
+    a = test(2);
+    return 1;
+}

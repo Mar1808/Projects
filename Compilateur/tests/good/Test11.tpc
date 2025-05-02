@@ -1,0 +1,11 @@
+int res,  a, b, c,d,e,f;
+
+int main(int a, int b) {
+    if (a < b) {
+        res = a;
+    }
+    else {
+        res = b;
+    }
+    return res;
+}

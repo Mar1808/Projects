@@ -1,0 +1,10 @@
+int f[1];
+int test(int a) {
+    return a;
+}
+
+int main(void) {
+    int c;
+    c = test(f);
+    return 0;
+}

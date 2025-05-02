@@ -1,0 +1,6 @@
+// type
+int main(void) {
+    char s;
+    s = 23;
+    return s;
+}

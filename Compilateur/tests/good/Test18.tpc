@@ -1,0 +1,7 @@
+// Récupération d'un nombre négatif
+int main(void) {
+    int a;
+    a = getint();
+    putint(a);
+    return 0;
+}

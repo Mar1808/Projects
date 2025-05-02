@@ -1,0 +1,27 @@
+int i;
+
+int test(int a) {
+    return 0;
+}
+
+int sizeof(int type, int taille) {
+    return (taille / type);
+}
+
+int main(void) {
+    int taille;
+    char tab[100000000000000000];
+    char tabC[5];
+    int tabI[5];
+    i = 0;
+    taille = 100000000000000000;
+    if(sizeof(0, taille) < taille) {
+        tabI[i] = i;
+        i = tabI[sizeof(0, taille) - 5];
+        return tabI[0];
+    } else {
+        tabC[i] = i;
+        i = tabC[sizeof(0, taille) - 5];
+        return tabC[0];
+    }
+}

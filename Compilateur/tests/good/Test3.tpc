@@ -1,0 +1,11 @@
+int a;
+int main(void) {
+    int a;
+    int b;
+    int res;
+    res = a + b;
+    res = a * b;
+    res = a % b;
+    res = a - b;
+    return 0;
+}

@@ -1,0 +1,4 @@
+int main(void) {
+    if(if(A){}) {}
+    return getint();
+}

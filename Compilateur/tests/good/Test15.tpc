@@ -1,0 +1,6 @@
+int main(void) {
+    char a;
+    // a = getchar();
+    putchar('\n');
+    return 0;
+}
