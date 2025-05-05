@@ -1,7 +1,3 @@
-# Marwane KAOUANE
-# Margot-Sainte KOSSO-ISSONGO
-
-
 from fltk import*
 
 
