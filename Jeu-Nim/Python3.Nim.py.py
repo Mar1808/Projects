@@ -1,9 +1,3 @@
-# TP3 groupe b
-# Marwane KAOUANE
-# Vincent GOMIS
-# Rahma BEN YAHIA 
-
-
 
       #################################################      Fonction      #########################################################
 
