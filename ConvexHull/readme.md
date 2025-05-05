@@ -1,8 +1,5 @@
 #Projet informatique : Enveloppe Convexe dans le plan
 
-Wadi NEJI           TD2/TP3
-Marwane KAOUANE     TD4/TP6
-
 ------------------------------------------
 
 Compilation : clang -std=c17 -Wall Projet.c -o projet -lMLV -lm
