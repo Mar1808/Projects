@@ -1,6 +1,3 @@
-// KAOUANE MARWANE    TD4/TP6
-// NEJI Wadi          TD2/TP3
-
 
 #include <MLV/MLV_all.h>
 #include <stdio.h>
