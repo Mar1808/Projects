@@ -1,5 +1,3 @@
-# EnSkred-KAOUANE-MAIBECHE
-
 # EnSkred
 
 **EnSkred** est une application réseau décentralisée écrite en Java, utilisant RSA pour assurer la communication sécurisée entre plusieurs nœuds connectés. Elle permet l'affichage dynamique du graphe des connexions, la messagerie publique et cachée, ainsi qu'une gestion robuste des connexions et déconnexions.
