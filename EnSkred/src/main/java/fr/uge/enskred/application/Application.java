@@ -72,7 +72,7 @@ public final class Application {
 		private final ArrayDeque<ByteBuffer> queue;
 		private final Application server;
 		private boolean closed = false;
-		//--- Partie reader à changer
+		
 		private final PrimaryReader primaryReader;
 		private final PrimaryPayloadReader primaryPayloadReader;
 		private final PrimaryInstructionReader primaryInstructionReader;
