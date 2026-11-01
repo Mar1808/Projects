@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Recettes | RUGE</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+<div class="admin-layout">
+
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('recipes')}"></div>
+
+    <main class="admin-container">
+        <header class="page-header">
+            <h1>Administration — Recettes</h1>
+        </header>
+
+        <div class="table-card">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Nom de la recette</th>
+                    <th>Nom du Créateur</th>
+                    <th>Statut</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="recipe : ${recipes}">
+                    <td>
+                        <a th:href="@{/recipes/{id}(id=${recipe.id})}" target="_blank" th:text="${recipe.name}">
+                            Tarte aux pommes
+                        </a>
+                    </td>
+                    <td>
+                        <a th:href="@{/users/{id}(id=${recipe.creatorId})}" target="_blank" th:text="${recipe.creatorName}">James Bond</a>
+                    </td>
+                    <td>
+                        <span th:if="${recipe.active}" class="badge badge-active">Active</span>
+                        <span th:unless="${recipe.active}" class="badge badge-inactive">Inactive</span>
+                    </td>
+                    <td class="text-end actions-cell">
+                        <form th:action="@{/recipes/delete/{id}(id=${recipe.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                                <i class="fa-solid fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(recipes)}">
+                    <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                        Aucune recette trouvée sur la plateforme.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

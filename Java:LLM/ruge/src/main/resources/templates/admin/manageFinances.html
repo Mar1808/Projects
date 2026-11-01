@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Finances | RUGE</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="admin-layout">
+
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('finances')}"></div>
+
+    <main class="admin-container">
+        <header class="page-header">
+            <h1>Administration — Finances</h1>
+        </header>
+
+        <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Total des redistributions</span>
+                <span class="kpi-value highlight" th:text="${distributionAmount != null ? distributionAmount + ' €' : '- €'}">- €</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Total des bénéfices</span>
+                <span class="kpi-value" th:text="${beneficeAmount != null ? beneficeAmount + ' €' : '- €'}">- €</span>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 40px; font-size: 20px;">Configuration des Tarifs</h2>
+
+        <div class="table-card" style="padding: 20px; background: #fff; border-radius: 8px;">
+            <form th:action="@{/admin/finances/update-prices}" method="post" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+
+                <div>
+                    <label for="aiSearchPrice" style="font-weight: bold; display: block; margin-bottom: 5px;">Prix Recherche IA (€)</label>
+                    <input type="number" step="0.01" min="0" id="aiSearchPrice" name="aiSearchPrice"
+                           class="form-control" th:value="${appConfig.aiSearchPrice}" required>
+                </div>
+
+                <div>
+                    <label for="superLikePrice" style="font-weight: bold; display: block; margin-bottom: 5px;">Prix Super Like (€)</label>
+                    <input type="number" step="0.01" min="0" id="superLikePrice" name="superLikePrice"
+                           class="form-control" th:value="${appConfig.superLikePrice}" required>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary" style="background-color: #d1b88e; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; color: white; font-weight: bold;">
+                        Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 40px; font-size: 20px;">Transactions Récentes & Retraits</h2>
+
+        <details class="filter-panel" style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #fafafa;"
+                 th:open="${param.startDate != null or param.endDate != null or param.sourceWalletId != null or param.destinationWalletId != null}">
+
+            <summary style="cursor: pointer; font-weight: bold; padding: 15px; list-style: none; display: flex; align-items: center; user-select: none;">
+                <span>⚙️ Filtres de recherche</span>
+                <small style="margin-left: 10px; color: #666; font-weight: normal;">(Cliquez pour dérouler/masquer)</small>
+            </summary>
+
+            <div style="padding: 0 15px 15px 15px; border-top: 1px solid #e2e8f0;">
+                <form th:action="@{/admin/finances}" method="get" class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        <label for="limit" class="form-label text-muted small">Nombre max</label>
+                        <input type="number" id="limit" name="limit" th:value="${currentLimit}" class="form-control" min="1" max="500">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label text-muted small">Du</label>
+                        <input type="datetime-local" step="1" id="startDate" name="startDate" th:value="${param.startDate}" class="form-control">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label text-muted small">Au</label>
+                        <input type="datetime-local" step="1" id="endDate" name="endDate" th:value="${param.endDate}" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="walletSourceId" class="form-label text-muted small">ID Source Wallet</label>
+                        <input type="number" id="walletSourceId" name="walletSourceId" th:value="${param.walletSourceId}" class="form-control" placeholder="Ex: 16">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="walletDestinationId" class="form-label text-muted small">ID Source Wallet</label>
+                        <input type="number" id="walletDestinationId" name="walletDestinationId" th:value="${param.walletDestinationId}" class="form-control" placeholder="Ex: 4">
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn" style="background-color: #e35a34; color: white;">Filtrer</button>
+                        <a th:href="@{/admin/finances}" class="btn btn-outline-secondary">Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
+        </details>
+        <div class="actions">
+            <a th:href="@{/admin/finances/export-transactions}" class="btn btn-success">
+                ⬇️ Exporter mes transactions (CSV)
+            </a>
+            <form th:action="@{/admin/finances/redistribute-now}" method="post" style="display:inline-block; margin-left: 12px;">
+                <button type="submit"
+                        class="btn btn-primary"
+                        style="background-color: #3a7a3a; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; color: white; font-weight: bold;">
+                    Redistribuer tous les super-likes en attente
+                </button>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Source Wallet</th>
+                        <th>Destination Wallet</th>
+                        <th>Montant</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="transaction : ${transactions}">
+                        <td th:text="${#temporals.format(transaction.date, 'yyyy-MM-dd HH:mm')}">2026-03-07 14:30</td>
+                        <td th:text="${transaction.sourceUserId}"></td>
+                        <td th:text="${transaction.targetUserId}">-</td>
+                        <td th:text="${transaction.amount > 0 ? '+' + transaction.amount + ' €' : transaction.amount + ' €'}"
+                            th:style="${transaction.amount > 0 ? 'color: var(--success); font-weight: bold;' : 'color: var(--danger); font-weight: bold;'}">
+                        </td>
+                        <td th:text="${transaction.description}"></td>
+                        <td class="text-end actions-cell">
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${#lists.isEmpty(transactions)}" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                Aucune transaction pour le moment.
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 40px; font-size: 20px;">Detail de redistribution par recette</h2>
+
+        <div class="table-card">
+            <table class="admin-table" th:if="${redistributionDetails != null and !#lists.isEmpty(redistributionDetails)}">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Recette source</th>
+                    <th>Recette beneficiaire</th>
+                    <th>Beneficiaire</th>
+                    <th>Montant</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="detail : ${redistributionDetails}">
+                    <td th:text="${#temporals.format(detail.date, 'yyyy-MM-dd HH:mm')}">2026-03-07 14:30</td>
+                    <td>
+                        <a th:if="${detail.sourceRecipeId != null}"
+                           th:href="@{/recipes/{id}(id=${detail.sourceRecipeId})}"
+                           th:text="${detail.sourceRecipeName != null ? detail.sourceRecipeName : 'Recette #' + detail.sourceRecipeId}">
+                            Recette source
+                        </a>
+                        <span th:if="${detail.sourceRecipeId == null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${detail.beneficiaryRecipeId != null}"
+                           th:href="@{/recipes/{id}(id=${detail.beneficiaryRecipeId})}"
+                           th:text="${detail.beneficiaryRecipeName != null ? detail.beneficiaryRecipeName : 'Recette #' + detail.beneficiaryRecipeId}">
+                            Recette beneficiaire
+                        </a>
+                        <span th:if="${detail.beneficiaryRecipeId == null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${detail.beneficiaryUserId != null}"
+                           th:href="@{/users/{id}(id=${detail.beneficiaryUserId})}"
+                           th:text="${detail.beneficiaryUserName != null ? detail.beneficiaryUserName : 'User #' + detail.beneficiaryUserId}">
+                            Utilisateur
+                        </a>
+                        <span th:if="${detail.beneficiaryUserId == null}">-</span>
+                    </td>
+                    <td th:text="${detail.amount + ' €'}">0.00 €</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${redistributionDetails == null or #lists.isEmpty(redistributionDetails)}"
+                 style="padding: 40px; text-align: center; color: var(--text-muted);">
+                Aucune redistribution pour le moment.
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('adminSidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+</script>
+
+</body>
+</html>

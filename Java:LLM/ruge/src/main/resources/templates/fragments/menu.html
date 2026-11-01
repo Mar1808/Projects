@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="topMenu" class="main-header">
+    <a class="brand" th:href="@{/home}" aria-label="Accueil RUGE">
+        <img th:src="@{/images/logo-ruge.png}" alt="Logo RUGE" class="brand-logo">
+        <span class="brand-name">RUGE</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Navigation principale">
+        <a th:if="${isAuthenticated}" th:href="@{/recipes}">Mes Recettes</a>
+        <div th:if="${isAuthenticated}" th:replace="~{fragments/toast :: toast}"></div>
+        <div class="user-menu">
+            <div class="user-profile-trigger">
+                <button class="avatar-btn" aria-label="Menu utilisateur">
+                    <th:block th:if="${isAuthenticated and image != null and !image.isEmpty()}">
+                        <img th:if="${#strings.startsWith(image, '/images')}"
+                             th:src="@{${image}}"
+                             alt="Profil"
+                             class="avatar-img-real">
+
+                        <img th:unless="${#strings.startsWith(image, '/images')}"
+                             th:src="${image}"
+                             alt="Profil"
+                             class="avatar-img-real">
+
+                    </th:block>
+                    <img th:unless="${isAuthenticated and image != null and !image.isEmpty()}"
+                         th:src="@{/images/icon-user.png}"
+                         alt="Profil"
+                         class="avatar-img">
+                </button>
+                <span th:if="${isAuthenticated and currentUserName != null}"
+                      class="header-username"
+                      th:text="${currentUserName}">Utilisateur</span>
+            <span th:if="${isAuthenticated}" class="header-wallet" th:text="${userBalance != null ? userBalance + ' €' : '0,00 €'}">€€€</span>
+            </div>
+
+            <div class="dropdown-content">
+                <th:block th:if="${!isAuthenticated}">
+                    <a th:href="@{/login}">Se connecter</a>
+                    <a th:href="@{/register}">S'inscrire</a>
+                </th:block>
+
+                <th:block th:if="${isAuthenticated}">
+                    <a th:if="${currentUserId != null}" th:href="@{/users/{id}(id=${currentUserId})}">Mon profil</a>
+                    <a th:href="@{/wallet}">Mon Wallet</a>
+                    <a th:if="${isAdmin}" th:href="@{/admin/users}">Administration</a>
+                    <form th:action="@{/logout}" method="post" class="dropdown-form">
+                        <button type="submit" class="dropdown-btn">Se déconnecter</button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

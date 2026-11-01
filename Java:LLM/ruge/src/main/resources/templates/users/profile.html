@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|Profil – ${profile.name}|">Profil</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="container">
+
+    <!-- NAV -->
+    <div class="rr-nav-bar">
+        <div class="back-links">
+            <a th:href="@{/recipes}" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Mes recettes
+            </a>
+        </div>
+    </div>
+
+    <!-- PROFILE HERO CARD -->
+    <div class="card profile-hero-card">
+        <div class="profile-header">
+            <div class="profile-left">
+                <!-- Avatar -->
+                <div class="avatar">
+                    <img th:if="${profile.imageUrl != null and !profile.imageUrl.isEmpty()}"
+                         th:src="${profile.imageUrl}"
+                         th:alt="${profile.name}">
+                    <span th:unless="${profile.imageUrl != null and !profile.imageUrl.isEmpty()}"
+                          th:text="${#strings.substring(profile.name, 0, 1).toUpperCase()}">U</span>
+                </div>
+
+                <!-- Name + stats -->
+                <div>
+                    <div class="profile-name" th:text="${profile.name}">Utilisateur</div>
+                    <div class="profile-meta">
+                        <span class="profile-stat">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span th:text="${recipeCount}">0</span>
+                            <span th:text="${recipeCount > 1 ? 'recettes' : 'recette'}">recettes</span>
+                        </span>
+                        <span class="profile-stat">
+                            <i class="fa-regular fa-comment"></i>
+                            <span th:text="${reviewCount}">0</span> avis
+                        </span>
+                        <span class="profile-stat">
+                            <i class="fa-solid fa-thumbs-up"></i>
+                            <span th:text="${likeCount}">0</span>
+                            <span th:text="${likeCount > 1 ? 'likes' : 'like'}">likes</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Follow / Unfollow -->
+            <div class="profile-actions" th:if="${isAuthenticated and !isSelf}">
+                <form th:if="${!isFollowing}" th:action="@{/users/{id}/follow(id=${profile.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-follow">
+                        <i class="fa-regular fa-bookmark"></i> Suivre
+                    </button>
+                </form>
+                <form th:if="${isFollowing}" th:action="@{/users/{id}/unfollow(id=${profile.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-following">
+                        <i class="fa-solid fa-bookmark"></i> Suivi
+                    </button>
+                </form>
+            </div>
+
+            <div class="profile-actions profile-avatar-actions"
+                 th:if="${isAuthenticated and isSelf and profilePhotos != null and !#lists.isEmpty(profilePhotos)}">
+                <form th:action="@{/users/{id}/photo(id=${profile.id})}" method="post" class="profile-avatar-form">
+                    <div class="profile-avatar-grid">
+                        <label class="profile-avatar-option" th:each="photo : ${profilePhotos}">
+                            <input type="radio" name="profilePhotoId" th:value="${photo.id}" th:checked="${photo.id == selectedProfilePhotoId}">
+                            <img th:src="${photo.imageUrl}" th:alt="${photo.label}">
+                        </label>
+                    </div>
+                    <button type="submit" class="rr-btn rr-btn-follow">
+                        <i class="fa-regular fa-image"></i> Mettre à jour ma photo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert-success" style="margin-top:16px">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert-error" style="margin-top:16px">
+            <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMessage}"></span>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         RECETTES DE L'UTILISATEUR
+    ══════════════════════════════════ -->
+    <div class="card rr-section">
+        <h2 class="section-title">
+            <span class="form-section-icon"><i class="fa-solid fa-bowl-food"></i></span>
+            Recettes publiées
+        </h2>
+
+        <section th:if="${profile.recipes != null and !#lists.isEmpty(profile.recipes)}" class="recipes-grid">
+            <a th:each="recipe : ${profile.recipes}"
+               th:href="@{/recipes/{id}(id=${recipe.id})}"
+               class="recipe-card">
+
+                <div class="recipe-image-wrap">
+                    <img th:if="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()}"
+                         th:src="${recipe.imageUrl}"
+                         th:alt="${recipe.name}"
+                         class="recipe-image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div th:unless="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()}"
+                         class="recipe-image recipe-image-placeholder">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                </div>
+
+                <div class="recipe-info">
+                    <p class="recipe-name" th:text="${recipe.name}">Nom de la recette</p>
+                    <p class="recipe-duration">
+                        <i class="fa-regular fa-clock"></i>
+                        <span th:text="${recipe.totalDuration}">30</span> min
+                    </p>
+                </div>
+            </a>
+        </section>
+
+        <div th:if="${profile.recipes == null or #lists.isEmpty(profile.recipes)}" class="empty-state">
+            <p>Aucune recette publiée pour le moment.</p>
+        </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════
+         COMMENTAIRES
+    ══════════════════════════════════ -->
+    <div class="card rr-section">
+        <h2 class="section-title">
+            <span class="form-section-icon"><i class="fa-regular fa-comments"></i></span>
+            Commentaires publiés
+        </h2>
+
+        <p class="empty-message" th:if="${#lists.isEmpty(reviewReactions)}">
+            Aucun commentaire pour le moment.
+        </p>
+
+        <ul class="reviews-list" th:unless="${#lists.isEmpty(reviewReactions)}">
+            <li th:each="review : ${reviewReactions}" class="review-item">
+                <div class="review-header">
+                    <span class="review-avatar-initial">
+                        <i class="fa-solid fa-book-open" style="font-size:13px"></i>
+                    </span>
+                    <div class="review-author-block">
+                        <a th:href="@{/recipes/{id}(id=${review.recipeId})}" class="creator-link">
+                            <strong th:text="${review.recipeName}">Recette</strong>
+                        </a>
+                        <span class="review-date"
+                              th:text="${#temporals.format(review.dateReview, 'dd MMM yyyy · HH:mm')}">07 mars 2026</span>
+                    </div>
+                </div>
+                <p class="review-comment" th:text="${review.comment}">Commentaire</p>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ══════════════════════════════════
+         LIKES
+    ══════════════════════════════════ -->
+    <div class="card rr-section">
+        <h2 class="section-title">
+            <span class="form-section-icon"><i class="fa-solid fa-thumbs-up"></i></span>
+            Recettes likées
+        </h2>
+
+        <p class="empty-message" th:if="${#lists.isEmpty(likeReactions)}">
+            Aucun like pour le moment.
+        </p>
+
+        <ul class="likes-list" th:unless="${#lists.isEmpty(likeReactions)}">
+            <li th:each="like : ${likeReactions}" class="like-item">
+                <a th:href="@{/recipes/{id}(id=${like.recipeId})}" class="like-item-link">
+                    <i class="fa-solid fa-thumbs-up like-icon"></i>
+                    <span th:text="${like.recipeName}">Nom de la recette</span>
+                </a>
+                <span class="review-date"
+                      th:text="${#temporals.format(like.likedAt, 'dd MMM yyyy · HH:mm')}">07 mars 2026</span>
+            </li>
+        </ul>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Utilisateurs | RUGE</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+<div class="admin-layout">
+
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('users')}"></div>
+
+    <main class="admin-container">
+        <header class="page-header">
+            <h1>Administration — Utilisateurs</h1>
+        </header>
+
+        <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+        <div th:if="${#lists.isEmpty(users)}" class="empty-state">
+            <h2>Aucun utilisateur trouvé</h2>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(users)}" class="table-card">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Statut</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.name}"><strong>Nom</strong></td>
+                    <td th:text="${user.email}">mail@example.com</td>
+                    <td th:text="${user.role}">MEMBER</td>
+
+                    <td>
+                            <span th:text="${user.status}"
+                                  th:class="'badge ' + (${user.status.name() == 'BANNED'} ? 'badge-banned' : 'badge-active')">
+                                ACTIVE
+                            </span>
+                    </td>
+
+                    <td class="text-end actions-cell">
+
+                        <a th:href="@{/admin/users/{id}/history(id=${user.id})}" class="btn-sm btn-outline" style="margin-right: 8px;">
+                            Historique
+                        </a>
+
+                        <div th:if="${user.status.name() != 'BANNED'}" th:id="'ban-container-' + ${user.id}" style="display: inline-block;">
+
+                            <button type="button" class="btn-sm btn-danger" th:id="'btn-bannir-' + ${user.id}"
+                                    th:onclick="|document.getElementById('ban-form-${user.id}').style.display='flex'; document.getElementById('btn-bannir-${user.id}').style.display='none';|">
+                                Bannir
+                            </button>
+
+                            <form th:id="'ban-form-' + ${user.id}"
+                                  th:action="@{/admin/users/{id}/ban(id=${user.id})}"
+                                  method="post"
+                                  class="inline-ban-form"
+                                  style="display:none;">
+
+                                <input name="reason" type="text" class="admin-input" placeholder="Raison..." required style="flex: 1; min-width: 120px;" />
+
+                                <input name="duration" type="number" class="admin-input" min="1" placeholder="Durée" style="width:70px;" />
+
+                                <select name="unit" class="admin-input">
+                                    <option value="hours">H</option>
+                                    <option value="days" selected>Jours</option>
+                                    <option value="permanent">Perm.</option>
+                                </select>
+
+                                <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Confirmer le bannissement de cet utilisateur ?');">
+                                    OK
+                                </button>
+
+                                <button type="button" class="btn-sm btn-outline"
+                                        th:onclick="|document.getElementById('ban-form-${user.id}').style.display='none'; document.getElementById('btn-bannir-${user.id}').style.display='inline-flex';|">
+                                    X
+                                </button>
+                            </form>
+                        </div>
+
+                        <form th:if="${user.status.name() == 'BANNED'}" th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post" style="display: inline-block;">
+                            <button type="submit" class="btn-sm btn-success" onclick="return confirm('Confirmer le débannissement de cet utilisateur ?');">
+                                Débannir
+                            </button>
+                        </form>
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('adminSidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+</script>
+</body>
+</html>

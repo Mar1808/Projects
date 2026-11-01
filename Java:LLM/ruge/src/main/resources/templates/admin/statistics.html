@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Statistiques | RUGE</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+
+<div th:replace="~{fragments/menu :: topMenu}"></div>
+
+<div class="admin-layout">
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('statistics')}"></div>
+
+    <main class="admin-container">
+        <header class="page-header">
+            <h1>Administration - Statistiques</h1>
+        </header>
+
+        <h2 class="section-title" style="margin-top: 0; font-size: 20px;">Utilisateurs et Recettes</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Utilisateurs</span>
+                <span class="kpi-value highlight" th:text="${statistics.totalUsers}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Utilisateurs actifs</span>
+                <span class="kpi-value" th:text="${statistics.activeUsers}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Utilisateurs bannis</span>
+                <span class="kpi-value" th:text="${statistics.bannedUsers}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Admins</span>
+                <span class="kpi-value" th:text="${statistics.adminUsers}">0</span>
+            </div>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Recettes (total)</span>
+                <span class="kpi-value highlight" th:text="${statistics.totalRecipes}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Recettes actives</span>
+                <span class="kpi-value" th:text="${statistics.activeRecipes}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Recettes archivees</span>
+                <span class="kpi-value" th:text="${statistics.archivedRecipes}">0</span>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 30px; font-size: 20px;">Engagement</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Avis</span>
+                <span class="kpi-value highlight" th:text="${statistics.totalReviews}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Likes</span>
+                <span class="kpi-value" th:text="${statistics.totalLikes}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Super likes</span>
+                <span class="kpi-value" th:text="${statistics.totalSuperLikes}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Abonnements users</span>
+                <span class="kpi-value" th:text="${statistics.totalUserFollows}">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-title">Abonnements recettes</span>
+                <span class="kpi-value" th:text="${statistics.totalRecipeFollows}">0</span>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 30px; font-size: 20px;">Transactions</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">Transactions (total)</span>
+                <span class="kpi-value highlight" th:text="${statistics.totalTransactions}">0</span>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Nombre</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Rechargements wallet (Stripe)</td>
+                    <td th:text="${statistics.walletTopupTransactions}">0</td>
+                </tr>
+                <tr>
+                    <td>Benefice site (Super Like)</td>
+                    <td th:text="${statistics.superLikeBenefitTransactions}">0</td>
+                </tr>
+                <tr>
+                    <td>Reserve redistribution</td>
+                    <td th:text="${statistics.redistributionReserveTransactions}">0</td>
+                </tr>
+                <tr>
+                    <td>Redistribution mensuelle</td>
+                    <td th:text="${statistics.monthlyRedistributionTransactions}">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('adminSidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+</script>
+
+</body>
+</html>

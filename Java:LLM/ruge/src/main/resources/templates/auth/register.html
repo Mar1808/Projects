@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RUGE - Inscription</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+<main class="auth-shell">
+    <div th:replace='~{fragments/menu :: topMenu}'></div>
+    <section class="auth-content">
+        <h1>Inscription</h1>
+        <div th:if="${isAuthenticated}" class="alert alert-success">Vous êtes déjà connecté.</div>
+        <div th:if="${!isAuthenticated}" class="auth-wrap">
+            <form th:action="@{/register}" th:object="${user}" method="post" class="auth-form">
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                <div class="form-panel">
+                    <div class="field-row">
+                        <label for="name" class="sr-only">Nom</label>
+                        <div class="field-bar">
+                            <span class="field-prefix" aria-hidden="true">
+                                <img th:src="@{/images/icon-user.png}" alt="" class="field-icon">
+                            </span>
+                            <input type="text" id="name" th:field="*{name}" placeholder="Nom" required>
+                        </div>
+                        <p class="error-msg" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                    </div>
+
+                    <div class="field-row">
+                        <label for="email" class="sr-only">Mail</label>
+                        <div class="field-bar">
+                            <span class="field-prefix" aria-hidden="true">
+                                <img th:src="@{/images/icon-mail.png}" alt="" class="field-icon">
+                            </span>
+                            <input type="email" id="email" th:field="*{email}" placeholder="Mail" required>
+                        </div>
+                        <p class="error-msg" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+                    </div>
+
+                    <div class="field-row">
+                        <label for="password" class="sr-only">Mot de passe</label>
+                        <div class="field-bar">
+                            <span class="field-prefix" aria-hidden="true">
+                                <img th:src="@{/images/icon-lock.png}" alt="" class="field-icon">
+                            </span>
+                            <input type="password" id="password" th:field="*{password}" placeholder="Mot de passe" required>
+                        </div>
+                        <p class="error-msg" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                    </div>
+
+                    <div class="field-row avatar-picker-row">
+                        <p class="avatar-picker-title">Choisissez une photo de profil</p>
+                        <div class="avatar-picker-grid" th:if="${profilePhotos != null and !#lists.isEmpty(profilePhotos)}">
+                            <label class="avatar-picker-option" th:each="photo : ${profilePhotos}">
+                                <input type="radio" th:field="*{profilePhotoId}" th:value="${photo.id}">
+                                <img th:src="${photo.imageUrl}" th:alt="${photo.label}">
+                                <span th:text="${photo.label}">Avatar</span>
+                            </label>
+                        </div>
+                        <p class="error-msg" th:if="${#fields.hasErrors('profilePhotoId')}" th:errors="*{profilePhotoId}"></p>
+                    </div>
+
+                    <p class="existing-account">Vous avez un compte ? <a th:href="@{/login}">Se connecter</a></p>
+                </div>
+
+                <p class="terms-copy">En vous inscrivant, vous acceptez <a th:href="@{/terms}">les conditions d'utilisation</a></p>
+
+                <div class="auth-stack">
+                    <button type="submit" class="auth-btn">S'inscrire</button>
+                    <a th:href="@{/oauth2/authorization/gitlab}" class="gitlab-btn">S'inscrire via GitLab</a>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${isAuthenticated}" class="logout-wrap">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="auth-btn">Se déconnecter</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

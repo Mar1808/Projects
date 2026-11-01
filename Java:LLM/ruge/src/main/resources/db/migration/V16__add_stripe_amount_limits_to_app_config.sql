@@ -1,0 +1,5 @@
+ALTER TABLE app_configuration
+    ADD COLUMN IF NOT EXISTS stripe_min_amount DECIMAL(19,2) NOT NULL DEFAULT 1.00;
+
+ALTER TABLE app_configuration
+    ADD COLUMN IF NOT EXISTS stripe_max_amount DECIMAL(19,2) NOT NULL DEFAULT 5000.00;

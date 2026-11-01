@@ -1,0 +1,299 @@
+/* =========================
+   ADMINISTRATION - STYLES SPÉCIFIQUES
+   ========================= */
+
+/* Conteneur principal */
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Carte contenant le tableau */
+.table-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border, #e0e0e0);
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+/* Le Tableau */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    font-size: 15px;
+}
+
+.admin-table th {
+    background: var(--search-bg, #e8d8b7); /* Le beige du thème */
+    color: var(--text-main, #2b2b2b);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    padding: 16px 20px;
+    text-align: left;
+    letter-spacing: 0.5px;
+}
+
+.admin-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border, #e0e0e0);
+    vertical-align: middle;
+    color: var(--text-main, #2b2b2b);
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+    background: #fcfcfc;
+}
+
+/* Badges de statut */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+    text-align: center;
+}
+.badge-active { background: #e8f8ee; color: #1f6539; }
+.badge-inactive { background: #f0f0f0; color: #7b7b7b; }
+.badge-banned { background: #ffe8e6; color: #7b1d16; }
+
+/* Boutons d'administration */
+.btn-sm {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-outline { background: white; border: 1px solid var(--border, #e0e0e0); color: var(--text-main, #2b2b2b); }
+.btn-outline:hover { background: #fbf7f0; border-color: #d8c9b3; text-decoration: none;}
+
+.btn-danger { background: #e74c3c; color: white; }
+.btn-danger:hover { background: #c0392b; }
+
+.btn-success { background: #27ae60; color: white; }
+.btn-success:hover { background: #2ecc71; }
+
+/* Formulaire de bannissement (Inline) */
+.inline-ban-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    background: #fdfdfd;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border, #e0e0e0);
+}
+
+.admin-input {
+    border: 1px solid var(--border, #e0e0e0);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.admin-input:focus {
+    border-color: var(--primary, #e64a19);
+    box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.1);
+}
+
+.text-end { text-align: right; }
+.actions-cell { min-width: 250px; }
+
+
+/*
+    Barre latérale d'administration
+ */
+
+/* Le conteneur qui englobe la sidebar et le contenu */
+.admin-layout {
+    display: flex;
+    min-height: calc(100vh - 85px); /* Prend toute la hauteur sous le header */
+    background-color: var(--bg-color);
+}
+
+/* La barre latérale */
+.admin-sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    border-right: 1px solid var(--border);
+    transition: width 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* État plié de la barre latérale */
+.admin-sidebar.collapsed {
+    width: 60px;
+}
+
+/* Bouton pour plier/déplier */
+.sidebar-toggle {
+    background: none;
+    border: none;
+    padding: 15px 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Aligné à droite par défaut */
+    transition: justify-content 0.3s;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle {
+    justify-content: center; /* Centré quand c'est plié */
+    padding: 15px 0;
+}
+
+/* Les liens de navigation */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 15px 15px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap; /* Empêche le texte de passer à la ligne */
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+    background-color: #fbf7f0;
+    color: var(--primary);
+    text-decoration: none;
+    border-right: 3px solid var(--primary);
+}
+
+.sidebar-icon {
+    font-size: 20px;
+    min-width: 30px; /* Assure que l'icône reste fixe quand on plie */
+    text-align: center;
+    margin-right: 15px;
+}
+
+.sidebar-text {
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    pointer-events: none; /* Empêche de cliquer sur le texte invisible */
+}
+
+/* Ajustement du contenu principal pour le dashboard */
+.admin-layout .admin-container {
+    flex-grow: 1;
+    margin: 0;
+    max-width: none;
+    padding: 40px;
+    overflow-x: auto;
+}
+
+/* =========================
+   7. DASHBOARD FINANCES (KPIs)
+   ========================= */
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Petite ligne orange décorative sur le côté des KPIs */
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary);
+}
+
+.kpi-title {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.kpi-value.highlight {
+    color: var(--primary); /* Met en valeur le revenu en orange */
+}
+
+/* Nouveau badge pour les statuts "En attente" */
+.badge-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Verrouille la taille des icônes du menu */
+.sidebar-icon {
+    width: 24px;        /* Largeur fixe */
+    height: 24px;       /* Hauteur fixe */
+    min-width: 24px;    /* Empêche l'icône de grandir ou rétrécir */
+    margin-right: 15px; /* Espace entre l'icône et le texte */
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+/* On en profite pour s'assurer que l'icône hamburger (☰) a aussi la bonne taille */
+.sidebar-toggle svg {
+    width: 24px;
+    height: 24px;
+}

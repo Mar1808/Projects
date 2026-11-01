@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${recipe.name}">Détail de la recette</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/recipes.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="container rr-page">
+
+    <div class="rr-nav-bar">
+        <div class="back-links">
+            <a th:href="@{/home}" class="btn-secondary"><i class="fa-solid fa-house"></i> Accueil</a>
+            <a th:href="@{/recipes}" class="btn-secondary"><i class="fa-solid fa-book-open"></i> Mes recettes</a>
+        </div>
+        <div th:if="${(isAuthenticated and isOwnRecipe) or isAdmin}" class="action-buttons" style="display: flex; gap: 10px;">
+            <a th:if="${(isAuthenticated and isOwnRecipe)}" th:href="@{/recipes/{id}/modify(id=${recipe.id})}" class="btn-secondary">
+                <i class="fa-solid fa-pencil"></i> Modifier
+            </a>
+            <form th:action="@{/recipes/delete/{id}(id=${recipe.id})}" method="post"
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');"
+                  style="margin: 0;">
+                <button type="submit" class="btn-danger-outline"><i class="fa-solid fa-trash"></i> Supprimer</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="rr-hero">
+        <div th:if="${errorMessage}" class="alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="rr-hero-image-wrap">
+            <img th:if="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()}"
+                 th:src="${recipe.imageUrl}"
+                 th:alt="${recipe.name}"
+                 class="rr-hero-image"
+                 onerror="this.style.display='none'; document.getElementById('img-placeholder').style.display='flex'">
+            <div id="img-placeholder"
+                 class="rr-hero-image rr-image-placeholder"
+                 th:style="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()} ? 'display:none' : 'display:flex'">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+        </div>
+
+        <div th:if="${recipe.recipeSourceId != null}" class="rr-variant-strip">
+            <span class="variant-badge"><i class="fa-solid fa-code-fork"></i> Variante</span>
+            <a th:href="@{/recipes/{id}(id=${recipe.recipeSourceId})}" class="rr-orig-link">
+                <i class="fa-solid fa-arrow-left"></i> Voir la recette originale
+            </a>
+        </div>
+
+        <h1 class="rr-recipe-title" th:text="${recipe.name}">Nom de la recette</h1>
+
+        <div class="rr-meta-chips">
+            <span class="rr-chip">
+                <i class="fa-solid fa-clock"></i>
+                <span th:text="${recipe.totalDuration}">30</span> min
+            </span>
+            <span class="rr-chip">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span th:text="${likeCount}">0</span><span th:if="${likeCount > 1}">likes</span><span th:if="${likeCount <= 1}">like</span>
+            </span>
+            <span class="rr-chip rr-chip-author">
+                <i class="fa-solid fa-user-chef"></i>
+                par
+                <a th:if="${recipe.creatorId != null}"
+                   th:href="@{/users/{id}(id=${recipe.creatorId})}"
+                   class="creator-link"
+                   th:text="${recipe.creatorName}">Auteur</a>
+                <strong th:unless="${recipe.creatorId != null}" th:text="${recipe.creatorName}">Auteur</strong>
+            </span>
+        </div>
+
+        <div class="rr-action-bar" th:if="${isAuthenticated}">
+
+            <div th:if="${!isOwnRecipe}">
+                <form th:if="${!isLikedRecipe}"
+                      th:action="@{/recipes/{id}/like(id=${recipe.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-like" title="Liker la recette">
+                        <i class="fa-regular fa-thumbs-up"></i>
+                        <span>J'aime</span>
+                    </button>
+                </form>
+                <form th:if="${isLikedRecipe}"
+                      th:action="@{/recipes/{id}/unlike(id=${recipe.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-like rr-btn-liked" title="Retirer mon like">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>J'aime</span>
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${!isOwnRecipe}">
+                <button th:if="${!isSuperLikedRecipe}"
+                        type="button"
+                        class="rr-btn rr-btn-superlike"
+                        title="Super liker"
+                        onclick="document.getElementById('superlike-modal').style.display='flex'">
+                    <i class="fa-regular fa-heart"></i>
+                    <span>Super like</span>
+                    <span class="rr-badge-price">
+                        <span th:if="${superLikePrice > 0}" th:text="${superLikePrice} + ' €'">1 €</span>
+                        <span th:if="${superLikePrice <= 0}">Gratuit</span>
+                    </span>
+                </button>
+                <button th:if="${isSuperLikedRecipe}"
+                        type="button"
+                        class="rr-btn rr-btn-superlike rr-btn-superliked"
+                        disabled
+                        title="Vous avez déjà super liké cette recette">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Super liké</span>
+                </button>
+            </div>
+
+            <div th:if="${!isOwnRecipe}">
+                <form th:if="${!isFollowingRecipe}"
+                      th:action="@{/recipes/{id}/follow(id=${recipe.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-follow" title="Suivre la recette">
+                        <i class="fa-regular fa-bookmark"></i>
+                        <span>Suivre</span>
+                    </button>
+                </form>
+                <form th:if="${isFollowingRecipe}"
+                      th:action="@{/recipes/{id}/unfollow(id=${recipe.id})}" method="post">
+                    <button type="submit" class="rr-btn rr-btn-follow rr-btn-following" title="Ne plus suivre">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Suivi</span>
+                    </button>
+                </form>
+            </div>
+
+            <a th:href="@{/recipes/{id}/variant(id=${recipe.id})}"
+               class="rr-btn rr-btn-create" title="Créer une variante">
+                <span class="rr-plus-icon"><i class="fa-solid fa-plus"></i></span>
+                <span>Créer une variante</span>
+            </a>
+
+        </div>
+    </div>
+
+    <div id="superlike-modal" class="rr-modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+        <div class="rr-modal">
+            <div class="rr-modal-icon"><i class="fa-solid fa-heart"></i></div>
+            <h3>Super Like</h3>
+            <p>Super liker cette recette coûte
+                <strong th:if="${superLikePrice > 0}" th:text="${superLikePrice} + ' €'">1 €</strong>
+                <strong th:if="${superLikePrice <= 0}">0 € (Offert !)</strong>.
+                Cette action est irréversible. Confirmer ?
+            </p>
+            <div class="rr-modal-actions">
+                <button class="rr-btn rr-btn-outline" onclick="document.getElementById('superlike-modal').style.display='none'">Annuler</button>
+                <form th:action="@{/recipes/{id}/super-like(id=${recipe.id})}" method="post" style="margin:0">
+                    <button type="submit" class="rr-btn rr-btn-superlike rr-btn-modal-confirm">
+                        <i class="fa-solid fa-heart"></i> Confirmer
+                        <span th:if="${superLikePrice > 0}" th:text="'(' + ${superLikePrice} + ' €)'"> (1 €)</span>
+                        <span th:if="${superLikePrice <= 0}">(Gratuit)</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+
+    <div class="card rr-section">
+        <h2 class="section-title"><i class="fa-solid fa-align-left"></i> Description</h2>
+        <p class="description" th:text="${recipe.description}">Description de la recette</p>
+    </div>
+
+    <div class="card rr-section">
+        <h2 class="section-title"><i class="fa-solid fa-basket-shopping"></i> Ingrédients</h2>
+
+        <ul class="ingredients-list" th:if="${recipe.ingredients != null and !#lists.isEmpty(recipe.ingredients)}">
+            <li th:each="ingredient : ${recipe.ingredients}">
+                <th:block th:if="${recipe.recipeSourceId == null}">
+                    <strong th:text="${ingredient.name}">Ingrédient</strong>
+                    — <span th:text="${ingredient.quantity}"></span>
+                </th:block>
+                <th:block th:if="${recipe.recipeSourceId != null}"
+                          th:with="isDeleted=${#strings.contains(ingredient.name, '__DELETED__')},
+                                   isKeeped=${#strings.contains(ingredient.name, '__KEEPED__')},
+                                   cleanName=${#strings.contains(ingredient.name, '__DELETED__') ?
+                                       #strings.replace(ingredient.name, '\_\_DELETED\_\_', '') :
+                                       (#strings.contains(ingredient.name, '__KEEPED__') ?
+                                           #strings.replace(ingredient.name, '\_\_KEEPED\_\_', '') :
+                                           ingredient.name)}">
+                    <span th:if="${isDeleted}" class="ingredient-deleted">
+                        <strong th:text="${cleanName}"></strong> — <span th:text="${ingredient.quantity}"></span>
+                        <em class="diff-tag diff-del">supprimé</em>
+                    </span>
+                    <span th:if="${isKeeped and !isDeleted}">
+                        <strong th:text="${cleanName}"></strong> — <span th:text="${ingredient.quantity}"></span>
+                    </span>
+                    <span th:if="${!isDeleted and !isKeeped}" class="ingredient-new">
+                        <strong th:text="${cleanName}"></strong> — <span th:text="${ingredient.quantity}"></span>
+                        <em class="diff-tag diff-add">nouveau</em>
+                    </span>
+                </th:block>
+            </li>
+        </ul>
+        <p class="empty-message" th:unless="${recipe.ingredients != null and !#lists.isEmpty(recipe.ingredients)}">
+            Aucun ingrédient renseigné
+        </p>
+    </div>
+
+    <div class="card rr-section">
+        <h2 class="section-title"><i class="fa-solid fa-list-ol"></i> Étapes de préparation</h2>
+
+        <ul class="steps-list" th:if="${recipe.steps != null and !#lists.isEmpty(recipe.steps)}">
+            <li th:each="step, iterStat : ${recipe.steps}">
+                <span class="step-number" th:text="${iterStat.count}">1</span>
+                <div class="step-content">
+                    <th:block th:if="${recipe.recipeSourceId == null}">
+                        <p th:text="${step.step}"></p>
+                    </th:block>
+                    <th:block th:if="${recipe.recipeSourceId != null}"
+                              th:with="isDeleted=${#strings.contains(step.step, '__DELETED__')},
+                                       isKeeped=${#strings.contains(step.step, '__KEEPED__')},
+                                       cleanStep=${#strings.contains(step.step, '__DELETED__') ?
+                                           #strings.replace(step.step, '\_\_DELETED\_\_', '') :
+                                           (#strings.contains(step.step, '__KEEPED__') ?
+                                               #strings.replace(step.step, '\_\_KEEPED\_\_', '') :
+                                               step.step)}">
+                        <p th:if="${isDeleted}" class="step-deleted">
+                            <span th:text="${cleanStep}"></span>
+                            <em class="diff-tag diff-del">supprimée</em>
+                        </p>
+                        <p th:if="${isKeeped and !isDeleted}" th:text="${cleanStep}"></p>
+                        <p th:if="${!isDeleted and !isKeeped}" class="step-new">
+                            <span th:text="${cleanStep}"></span>
+                            <em class="diff-tag diff-add">nouveau</em>
+                        </p>
+                    </th:block>
+                    <div class="step-duration" th:if="${step.duration > 0}">
+                        <i class="fa-regular fa-clock"></i> <span th:text="${step.duration}">10</span> min
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <p class="empty-message" th:unless="${recipe.steps != null and !#lists.isEmpty(recipe.steps)}">
+            Aucune étape renseignée
+        </p>
+    </div>
+
+    <div class="card rr-section">
+        <h2 class="section-title"><i class="fa-solid fa-comments"></i> Avis &amp; Commentaires</h2>
+
+        <p class="empty-message" th:if="${#lists.isEmpty(recipeReviews)}">Aucun avis pour le moment.</p>
+
+        <ul class="reviews-list" th:unless="${#lists.isEmpty(recipeReviews)}">
+            <li th:each="review : ${recipeReviews}" class="review-item">
+                <div class="review-header">
+                    <a th:if="${review.authorId != null}" th:href="@{/users/{id}(id=${review.authorId})}" class="review-avatar-link">
+                        <span class="review-avatar-initial" th:text="${#strings.substring(review.authorName, 0, 1)}">A</span>
+                    </a>
+                    <span th:unless="${review.authorId != null}" class="review-avatar-initial" th:text="${#strings.substring(review.authorName, 0, 1)}">A</span>
+                    <div class="review-author-block">
+                        <a th:if="${review.authorId != null}" th:href="@{/users/{id}(id=${review.authorId})}" class="creator-link">
+                            <strong th:text="${review.authorName}">Auteur</strong>
+                        </a>
+                        <strong th:unless="${review.authorId != null}" th:text="${review.authorName}">Auteur</strong>
+                        <span class="review-date" th:text="${#temporals.format(review.dateReview, 'dd MMM yyyy · HH:mm')}">07 mars 2026 · 14:30</span>
+                    </div>
+                </div>
+                <p class="review-comment" th:text="${review.comment}">Commentaire</p>
+            </li>
+        </ul>
+
+        <form th:if="${isAuthenticated}" th:action="@{/recipes/{id}/reviews(id=${recipe.id})}" method="post" class="review-form">
+            <label for="review"><i class="fa-solid fa-pen"></i> Laisser un avis</label>
+            <textarea id="review" name="review" rows="4" maxlength="1000"
+                      placeholder="Partagez votre expérience avec cette recette…"></textarea>
+            <div class="review-actions">
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Publier l'avis</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

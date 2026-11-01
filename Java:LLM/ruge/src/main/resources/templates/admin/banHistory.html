@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Historique des sanctions - Admin | RUGE</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<main class="admin-container">
+
+    <header class="page-header">
+        <div>
+            <h1>Historique des sanctions</h1>
+            <div style="color: var(--text-muted); font-size: 15px; margin-top: 5px;">
+                Utilisateur : <strong th:text="${user.name}" style="color: var(--text-main);">Nom</strong>
+                (<span th:text="${user.email}">email@example.com</span>)
+            </div>
+        </div>
+        <a th:href="@{/admin/users}" class="btn-secondary">← Utilisateurs</a>
+    </header>
+
+    <div th:if="${#lists.isEmpty(banHistory)}" class="empty-state">
+        <h2>Aucune sanction</h2>
+        <p>Cet utilisateur n'a jamais été banni.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(banHistory)}" class="table-card">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Date du ban</th>
+                <th>Modérateur</th>
+                <th>Motif</th>
+                <th>Durée</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="history : ${banHistory}">
+
+                    <td th:text="${#temporals.format(history.banDate, 'yyyy-MM-dd HH:mm')}">2026-03-07 14:30</td>
+
+                <td th:text="${history.bannedById}">AdminName</td>
+
+                <td th:text="${history.reason}">Insultes dans les commentaires</td>
+
+                <td>
+                    <span th:if="${history.duration == -1}" class="badge badge-banned">Définitif</span>
+
+                    <span th:if="${history.duration > 0}" class="badge" style="background: #f0f0f0; color: var(--text-main);" th:text="${history.duration} + ' jours'">7 jours</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+</body>
+</html>

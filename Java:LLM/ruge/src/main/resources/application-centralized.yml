@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: centralized
+
+  datasource:
+    # Supabase pooler for the centralized profile.
+    url: ${CENTRALIZED_DB_URL}
+    username: ${CENTRALIZED_DB_USERNAME}
+    password: ${CENTRALIZED_DB_PASSWORD:${DB_PASSWORD:}}

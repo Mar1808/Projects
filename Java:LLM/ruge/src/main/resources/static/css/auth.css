@@ -1,0 +1,370 @@
+/* =========================
+   RUGE - AUTH.CSS (Login & Register)
+   ========================= */
+
+.auth-shell {
+    width: 100%; min-height: 100vh;
+    background: radial-gradient(circle at top, #f7f7f7 0%, #e9e9e9 58%);
+    display: flex; flex-direction: column;
+}
+
+.auth-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    justify-content: center;
+}
+
+.auth-content h1 {
+    text-align: center;
+    font-size: clamp(30px, 4vw, 48px);
+    margin-bottom: 30px;
+}
+
+.form-panel {
+    width: 100%;
+    background: linear-gradient(0deg, rgba(255, 248, 231, 0.9), rgba(255, 248, 231, 0.9)), #ffffff;
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.field-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.avatar-picker-row {
+    gap: 12px;
+}
+
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Champs avec icône latérale */
+.field-bar {
+    width: 100%; height: 60px; display: flex; align-items: stretch;
+    background: #ffffff; border-radius: 30px; overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.field-prefix img,
+.field-prefix svg,
+.field-icon {
+    width: 24px !important;
+    height: 24px !important;
+    object-fit: contain;
+}
+.field-bar input {
+    flex-grow: 1;
+    border: none;
+    padding: 0 20px;
+    font-size: 16px;
+    background: transparent;
+}
+.field-bar input:focus {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    outline: none;
+}
+
+/* Grille d'avatars (Register) */
+.avatar-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+.avatar-picker-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.avatar-picker-option img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.avatar-picker-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(230, 74, 25, 0.15);
+}
+
+/* Liens et Actions */
+.auth-stack {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+.auth-btn {
+    width: 100%;
+    height: 55px;
+    border: none;
+    border-radius: 30px;
+    background: var(--primary);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.auth-btn:hover {
+    background-color: #d6410f;
+}
+
+.auth-btn:active {
+    transform: scale(0.98);
+}
+
+
+.gitlab-btn {
+    width: 100%;
+    height: 55px;
+    border: 2px solid var(--primary);
+    border-radius: 30px;
+    background: #ffffff;
+    color: var(--primary);
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.gitlab-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.forgot-btn {
+    width: 100%;
+    text-align: right;
+    margin-top: -10px;
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.forgot-btn:hover {
+    text-decoration: underline;
+}
+
+.signup-copy {
+    text-align: center;
+    font-size: 16px;
+    color: var(--text-main);
+    margin: 20px 0;
+}
+
+.signup-copy a {
+    color: var(--primary);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.signup-copy a:hover {
+    text-decoration: underline;
+}
+
+.action-stack {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.auth-wrap {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.field-bar {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: stretch;
+    background: #ffffff;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.field-prefix {
+    width: 80px;
+    background: #ebdcba;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.field-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    flex-grow: 1;
+    border: none;
+    padding: 0 20px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--text-main);
+    background: transparent;
+}
+
+input::placeholder {
+    color: #a0a0a0;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.error-msg {
+    color: var(--danger);
+    font-size: 13px;
+    margin: 5px 0 0 15px; /* Petit décalage pour l'aligner avec le champ texte */
+    font-weight: 600;
+}
+
+.avatar-picker-row {
+    gap: 12px;
+}
+
+.avatar-picker-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-main);
+}
+
+.avatar-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.avatar-picker-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    border: 2px solid #e9dec8;
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-picker-option img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-picker-option span {
+    font-size: 12px;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.avatar-picker-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.avatar-picker-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(239, 75, 18, 0.15);
+}
+
+.avatar-picker-option:hover {
+    transform: translateY(-2px);
+}
+
+/* --- 6. TEXTES ET LIENS --- */
+.existing-account,
+.terms-copy {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-main);
+    margin: 10px 0 0;
+}
+
+.existing-account a,
+.terms-copy a {
+    color: var(--primary);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.existing-account a:hover,
+.terms-copy a:hover {
+    text-decoration: underline;
+}
+
+
+@media (max-width: 768px) {
+    .field-bar { height: 50px; }
+    .field-prefix { width: 60px; }
+    .avatar-picker-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-panel {
+        padding: 30px 20px;
+    }
+    .auth-btn, .gitlab-btn {
+        height: 50px;
+        font-size: 18px;
+    }
+
+
+}
