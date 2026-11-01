@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creer une recette</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/recipes.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="container">
+
+    <!-- NAV -->
+    <div class="rr-nav-bar">
+        <div class="back-links">
+            <a th:href="@{/recipes}" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Mes recettes
+            </a>
+        </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="form-page-hero">
+        <div class="form-page-icon"><i class="fa-solid fa-bowl-food"></i></div>
+        <div>
+            <h1 class="form-page-title">Nouvelle recette</h1>
+            <p class="form-page-subtitle">Partagez votre creation avec la communaute RUGE</p>
+        </div>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <form id="recipeForm" th:action="@{/recipes/create}" method="post">
+
+        <div class="card form-card">
+            <h2 class="form-section-title">
+                <span class="form-section-icon"><i class="fa-solid fa-pen-nib"></i></span>
+                Informations generales
+            </h2>
+
+            <div class="form-group">
+                <label for="name">Nom de la recette <span class="required">*</span></label>
+                <input type="text" id="name" name="name" required minlength="3" maxlength="100"
+                       placeholder="Ex : Poulet roti aux herbes de Provence">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description <span class="required">*</span></label>
+                <textarea id="description" name="description" rows="4" required minlength="10" maxlength="2000"
+                          placeholder="Racontez l'histoire de cette recette, son origine, ses particularites."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">
+                    <i class="fa-solid fa-image" style="color:var(--primary)"></i>
+                    URL de l'image
+                    <span class="label-optional">- optionnel</span>
+                </label>
+                <input type="text" id="imageUrl" name="imageUrl"
+                       placeholder="https://exemple.com/mon-plat.jpg">
+                <p class="field-hint">Collez l'URL d'une image publique pour illustrer votre recette.</p>
+            </div>
+        </div>
+
+        <div class="card form-card">
+            <h2 class="form-section-title">
+                <span class="form-section-icon"><i class="fa-solid fa-basket-shopping"></i></span>
+                Ingredients <span class="required">*</span>
+            </h2>
+
+            <div id="ingredientsList" class="dynamic-list"></div>
+
+            <button type="button" class="btn-add-item" onclick="addIngredient()">
+                <i class="fa-solid fa-plus"></i> Ajouter un ingredient
+            </button>
+        </div>
+
+        <div class="card form-card">
+            <h2 class="form-section-title">
+                <span class="form-section-icon"><i class="fa-solid fa-list-ol"></i></span>
+                Etapes de preparation <span class="required">*</span>
+            </h2>
+
+            <div id="stepsList" class="dynamic-list"></div>
+
+            <button type="button" class="btn-add-item" onclick="addStep()">
+                <i class="fa-solid fa-plus"></i> Ajouter une etape
+            </button>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="form-submit-bar">
+            <a th:href="@{/recipes}" class="btn-secondary">
+                <i class="fa-solid fa-xmark"></i> Annuler
+            </a>
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-paper-plane"></i> Publier la recette
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    let ingredientIndex = 0;
+    let stepIndex = 0;
+
+    function addIngredient() {
+        const container = document.getElementById('ingredientsList');
+        const div = document.createElement('div');
+        div.className = 'dynamic-item';
+        div.innerHTML = `
+            <div class="ing-fields">
+                <input type="text"
+                       name="ingredients[${ingredientIndex}].name"
+                       placeholder="Nom de l'ingredient"
+                       required>
+                <input type="text"
+                       name="ingredients[${ingredientIndex}].quantity"
+                       placeholder="Quantite (ex : 200 g)"
+                       required>
+            </div>
+            <button type="button" class="btn-remove-new" onclick="this.closest('.dynamic-item').remove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        container.appendChild(div);
+        ingredientIndex++;
+    }
+
+    function addStep() {
+        const container = document.getElementById('stepsList');
+        const num = container.querySelectorAll('.dynamic-item').length + 1;
+        const div = document.createElement('div');
+        div.className = 'dynamic-item step-dynamic-item';
+        div.innerHTML = `
+            <span class="step-number">${num}</span>
+            <div class="step-body">
+                <textarea name="steps[${stepIndex}].step"
+                          placeholder="Decrivez cette etape de preparation..."
+                          rows="3" required></textarea>
+                <div class="step-duration-row">
+                    <i class="fa-regular fa-clock"></i>
+                    <label>Duree (min) :</label>
+                    <input type="number" name="steps[${stepIndex}].duration"
+                           placeholder="0" class="small-input" min="0" required>
+                </div>
+            </div>
+            <button type="button" class="btn-remove-new" onclick="removeStep(this)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>`;
+        container.appendChild(div);
+        stepIndex++;
+        renumberStepsDynamic();
+    }
+
+    function removeStep(btn) {
+        btn.closest('.dynamic-item').remove();
+        renumberStepsDynamic();
+    }
+
+    function renumberStepsDynamic() {
+        document.querySelectorAll('#stepsList .step-number').forEach((el, i) => {
+            el.textContent = i + 1;
+        });
+    }
+
+    window.onload = function() {
+        addIngredient();
+        addStep();
+    };
+
+    document.getElementById('recipeForm').addEventListener('submit', function(e) {
+        const ingredients = document.querySelectorAll('#ingredientsList .dynamic-item').length;
+        const steps = document.querySelectorAll('#stepsList .dynamic-item').length;
+        if (ingredients === 0) {
+            e.preventDefault();
+            alert('Vous devez ajouter au moins un ingredient.');
+            return false;
+        }
+        if (steps === 0) {
+            e.preventDefault();
+            alert('Vous devez ajouter au moins une etape.');
+            return false;
+        }
+    });
+</script>
+</body>
+</html>

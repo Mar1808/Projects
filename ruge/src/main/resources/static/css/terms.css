@@ -1,0 +1,16 @@
+/* =========================
+   RUGE - TERMS.CSS
+   ========================= */
+
+.terms-layout { max-width: 940px; margin: 0 auto; padding: 42px 24px 80px; }
+.terms-hero { text-align: center; margin-bottom: 24px; }
+.terms-kicker { margin: 0 0 10px; color: var(--primary); font-size: 12px; letter-spacing: 0.18em; font-weight: 700; text-transform: uppercase; }
+.terms-title { margin: 0 0 10px; font-family: 'Lora', Georgia, serif; font-size: clamp(30px, 5vw, 44px); color: var(--text-main); }
+.terms-subtitle { margin: 0 auto; max-width: 680px; color: var(--text-muted); font-size: 15px; line-height: 1.65; }
+.terms-panel { background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); padding: 28px; }
+.terms-content { margin: 0; white-space: pre-line; line-height: 1.75; font-size: 15px; }
+
+@media (max-width: 600px) {
+    .terms-layout { padding: 30px 16px 56px; }
+    .terms-panel { padding: 20px; border-radius: 16px; }
+}

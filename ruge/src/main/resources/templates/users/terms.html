@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RUGE - Charte</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/terms.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+<main class="home-shell">
+    <div th:replace='~{fragments/menu :: topMenu}'></div>
+
+    <div class="terms-layout">
+        <section class="terms-hero">
+            <p class="terms-kicker">RUGE</p>
+            <h1 class="terms-title">Charte d'utilisation</h1>
+            <p class="terms-subtitle">Le contenu ci-dessous est maintenu par l'administration de la plateforme.</p>
+        </section>
+
+        <section class="terms-panel">
+            <article class="terms-content"
+                     th:if="${termsContent != null and !#strings.isEmpty(#strings.trim(termsContent))}"
+                     th:text="${termsContent}">
+                Charte indisponible pour le moment.
+            </article>
+            <p class="terms-empty"
+               th:unless="${termsContent != null and !#strings.isEmpty(#strings.trim(termsContent))}">
+                Charte indisponible pour le moment.
+            </p>
+        </section>
+    </div>
+</main>
+</body>
+</html>

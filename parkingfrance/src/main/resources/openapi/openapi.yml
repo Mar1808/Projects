@@ -1,0 +1,1415 @@
+openapi: 3.0.1
+info:
+  title: Parking France
+  description: |-
+    Parking France API – Trouver une place ne devrait pas être un hasard.
+
+    Cette API fournit des informations en temps réel sur la disponibilité des places
+    dans les parkings partenaires en France. Elle permet :
+      - aux **usagers** de consulter les parkings disponibles autour d’eux,
+        connaître les tarifs, équipements et places libres ;
+      - aux **administrateurs (mairies, gestionnaires de parking)** de gérer
+        les informations relatives à leurs parkings : création, mise à jour, fermeture,
+        maintenance, et gestion des équipements.
+
+    L’objectif est de réduire le stress et la pollution liés à la recherche
+    de stationnement, tout en valorisant les gestionnaires de parkings publics
+    et privés.  
+    
+    __**CETTE API N'EXPOSE PAS DE MÉTHODE POUR GÉRER LES GESTIONNAIRES DE PARKING**__  
+    Pour devenir gestionnaire de parking sur notre API, il faut nous adresser une demande mail à l’adresse service@parking-france.fr avec tous les documents nécessaires à la validation de votre dossier. Des experts viendront sur place pour valider en personne votre requête et examiner le parking afin de prévoir les installations requises.
+    
+    
+    **Métohdes soumises à authentification**  
+    Pour pouvoir utiliser les méthodes admin, vous devez vous authentifié à l'aide d'un token, vous aurez alors accès aux opérations d'ajout, de modifications et de suppréssions sur l'ensemble des parking dont vous êtes considerés comme gérant.  
+    Le token devra être transmis dans le header.  
+    Un 401 sera renvoyé en cas d'échec d'authentification.  
+    Un 403 sera renvoyé si vous n'êtes pas habilité à modifier le parking en question ou que vous n'êtes pas gestionnaire.
+  
+    <br/>
+    ___________ 
+    <br/>
+    __**Les différents tyes de méthodes**__  
+    3 services sont disponibles :
+    - __ParkingInfo__ donne des informations sur des informations sur les équipements ainsi que la disponibilité d'un parking afin de faciliter la recherche de parking adapté et disponible à son véhicule où aux contraintes de l'usager.   
+      <i><b>Ces méthodes ne sont pas soumises à authentification pour le moment (vouer à évoluer pour sytème de rémunération).</b></i>
+    <br>  
+    
+    - __Position__ ce sont les méthodes se servant d'une localisation pour renvoyer des informations sur des disponibilités. On peut par exemple lister les parkings d'une ville ou demander les places disponible à proximité d'un point donné.  
+      <i><b>Ces méthodes ne sont pas soumises à authentification pour le moment (vouer à évoluer pour sytème de rémunération).</b></i>
+    <br> 
+    
+    - __Gestionnaire__ ce sont les méthodes sevrant aux gestionnaires de parking pour modifier des informations sur leur parking. Par exemple si une place devient temporairement indisponible où que l'ascenseur est en panne, les gestionnaires seront en mesure de modifier les informations de leur(s) parking(s). Les informations pourront aussi être modifier par des super-administrateurs (créateurs de l'api dont les méthodes ne sont pas exposées) si ils remarquent des abus (mensonges des gestionnaires) ou des informations supplémentaires sur les caméras.  
+      Ils auront également la possibilité de soumettre des créations de parking et de supprimer leur parking).  
+      <i><b>Ces méthodes sont soumises à authentification et à autorisations (token à transmettre dans le header).</b></i>
+    
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/
+
+
+tags:
+  - name: ParkingInfo
+    description: Avoir des informations à propos d'un parking donné
+  - name: Position
+    description: Endpoints des méthodes se servant d'une localisation.
+  - name: Gestionnaire
+    description: Endpoints pour les gestionnaires, afin qu'ils puissent agir sur les places de parking qu'ils gèrent.
+
+paths:
+  /parkings/v1/{id}/availability:
+    get:
+      tags:
+        - ParkingInfo
+      summary: Obtenir la disponibilité d'un parking avec son id.
+      description: Récupérer le nombre de places disponibles, le nombre de places occupées et la capacité totale d'un parking. (option filtrer par type de place)
+      operationId: getParkingAvailability
+      parameters:
+        - name: id
+          in: path
+          description: ID du parking
+          required: true
+          schema:
+            type: integer
+            example: "123"
+        - name: spaceType
+          in: query
+          required: false
+          description: >
+            Type de place à considérer pour le calcul (optionnel).
+            Par défaut `car`.
+          schema:
+            $ref: '#/components/schemas/ParkingSpaceType'
+          example: e_car
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParkingAvailability"
+              examples:
+                default-car:
+                  summary: Par défaut (voiture)
+                  value:
+                    available: 42
+                    occupied: 158
+                    capacity: 200
+                ev-only:
+                  summary: Filtré sur voitures électriques
+                  value:
+                    available: 3
+                    occupied: 5
+                    capacity: 8
+        '400':
+          description: Invalid ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          
+  /parkings/v1/arounds:
+    post:
+      tags:
+        - Position
+      summary: Lister les parkings autour de l'utilisateur
+      description: | 
+        Retourne la liste des parkings disponibles autour de la position
+        en temps réel de l'utilisateur avec les disponibilités pour le type de place séléctionnée.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPosition'
+      responses:
+        '200':
+          description: Liste des parkings autour de l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingAvailability'
+        '404':
+          description: Aucun parking trouvé à proximité
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          
+  /parkings/v1/arounds/prediction:
+    post:
+      tags: 
+        - Position
+      summary: Prédire le nombre de places disponibles dans une zone à une date donnée.
+      description: | 
+        Obtenir le nombre de places qui devraient être disponibles à une date précise dans le futur dans un rayon paramétrable. 
+        Cette prédiction est faite avec notre moteur de prédiction qui utilise diverses données. 
+        Elle est sujette à erreur car il subsistera toujours des incertitudes. 
+        L'utilisateur pourra aussi spécifier son type de véhicule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequestArounds'
+      responses:
+        '200':
+          description: Liste des parkings avec le nombre de places qui devraient être disponibles dans la zone
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingAvailabilityPrediction'
+        '404':
+          description: Aucun parking trouvé à proximité
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          
+  /parkings/v1/city/{city}:
+    get:
+      tags: 
+        - Position
+      summary: Lister les parkings dans une ville donnée
+      description: | 
+        Retourne la liste des parkings disponibles dans une ville spécifique.
+      operationId: getParkingsByCity
+      parameters:
+        - name: city
+          in: path
+          description: Nom de la ville
+          required: true
+          schema:
+            type: string
+            example: "Paris"
+      responses:
+        '200':
+          description: Liste des parkings trouvés dans la ville
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parking'
+        '404':
+          description: Aucun parking trouvé dans cette ville
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /parkings/v1/{id}/equipments:
+    get:
+      tags:
+        - ParkingInfo
+      summary: Avoir les informations d'un parking
+      description: |
+        Permet de retrouver toutes les informations sur un parking donné. 
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Parking trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /parkings/v1/{id}/prediction:
+    post:
+      tags: 
+        - ParkingInfo
+      summary: Prédire le nombre de places disponibles dans un parkin à une date donnée.
+      description: | 
+        Obtenir le nombre de places qui devraient être disponibles à une date précise dans le futur dans un rayon paramétrable. 
+        Cette prédiction est faite avec notre moteur de prédiction qui utilise diverses données. 
+        Elle est sujette à erreur car il subsistera toujours des incertitudes. 
+        L'utilisateur pourra aussi spécifier son type de véhicule.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequestParking'
+      responses:
+        '200':
+          description: Liste des parkings avec le nombre de places qui devraient être disponibles dans la zone
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingAvailabilityPrediction'
+        '404':
+          description: Aucun parking trouvé à proximité
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /admin/v1/parkings:
+    get:
+      tags:
+        - Gestionnaire
+      summary: Retrouver tous les parkings (Admin)
+      description: |
+        Récupère la liste complète des parkings gérés par les administrateurs.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      responses:
+        '200':
+          description: Liste complète des parkings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parking'
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags:
+        - Gestionnaire
+      summary: Créer un nouveau parking
+      description: |
+        Permet à un administrateur d'ajouter un nouveau parking avec ses informations principales :
+        nom, adresse, capacité, tarifs, géolocalisation, etc.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parking'
+      responses:
+        '201':
+          description: Parking créé avec succès
+        '400':
+          description: Données invalides - Erreur dans les champs fournis.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v1/parkings/{id}:
+    get:
+      tags:
+        - Gestionnaire
+      summary: Consulter un parking spécifique
+      description: |
+        Permet à un administrateur d’obtenir toutes les informations sur un parking spécifique.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails du parking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Modifier les informations d’un parking
+      description: |
+        Permet à un administrateur de mettre à jour les informations principales
+        d’un parking existant, telles que le nom, la capacité, les tarifs ou l’adresse.
+      deprecated: true
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking à modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parking'
+      responses:
+        '200':
+          description: Parking mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Données invalides - Erreur de validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    
+    delete:
+      tags:
+        - Gestionnaire
+      summary: Supprimer un parking
+      description: |
+        Permet à un administrateur de supprimer définitivement un parking de la base.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Parking supprimé avec succès
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v1/parkings/{id}/equipments:
+    put:
+      tags:
+        - Gestionnaire
+      summary: Gérer les équipements d’un parking
+      description: |
+        Permet à un administrateur d’ajouter, supprimer ou modifier les équipements d’un parking
+        (toilettes, ascenseur, vidéosurveillance, bornes de recharge, station vélo/moto...).
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingInfo'
+      responses:
+        '200':
+          description: Équipements mis à jour avec succès
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v1/parkings/{id}/types:
+    put:
+      tags:
+        - Gestionnaire
+      summary: Définir et mettre à jour les types de places
+      description: |
+        Permet à un administrateur de définir ou modifier les types de places disponibles 
+        (PMR, famille, électriques, moto, vélo) et leur nombre.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingInfo'
+      responses:
+        '200':
+          description: Types de places mis à jour avec succès
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v1/parkings/{id}/area:
+    put:
+      tags:
+        - Gestionnaire
+      summary: Gérer la Topologie des zones et places
+      description: |
+        Permet à un administrateur de structurer un parking en zones (A, B, C...) et niveaux.
+        Utile pour un guidage précis des usagers.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topology'
+      responses:
+        '200':
+          description: Topologie mise à jour avec succès
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+  /admin/v2/parkings/{id}:
+    put:
+      tags:
+        - Gestionnaire
+      summary: Modifier les informations d’un parking
+      description: |
+        Permet à un administrateur de mettre à jour les informations principales
+        d’un parking existant, telles que le nom, la capacité, les tarifs ou l’adresse.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking à modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parking'
+      responses:
+        '200':
+          description: Parking mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Requête invalide – Erreur de validation des données.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié – L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé – L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur – Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/name:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Modifier le nom d’un parking
+      description: |
+        Permet à un administrateur de mettre à jour le nom d’un parking existant.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking à modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Parking République"
+              required:
+                - name
+      responses:
+        '200':
+          description: Nom du parking mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Requête invalide – Erreur de validation des données.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié – L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé – L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur – Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/address:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Modifier l’adresse d’un parking
+      description: |
+        Permet à un administrateur de mettre à jour l’adresse d’un parking existant.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking à modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                  example: "15 Rue de la Paix, 75002 Paris"
+              required:
+                - address
+      responses:
+        '200':
+          description: Adresse du parking mise à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Requête invalide – Erreur de validation des données.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié – L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé – L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur – Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/price:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Modifier le prix d’un parking
+      description: |
+        Permet à un gestionnaire de mettre à jour le tarif d’un parking existant.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du parking à modifier
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+                  format: float
+                  example: 2.50
+              required:
+                - price
+      responses:
+        '200':
+          description: Prix du parking mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Requête invalide – Erreur de validation des données.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié – L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé – L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur – Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/equipments:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Gérer les équipements d’un parking
+      description: |
+        Permet à un administrateur d’ajouter, supprimer ou modifier les équipements d’un parking
+        (toilettes, ascenseur, vidéosurveillance, bornes de recharge, station vélo/moto...).
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentRequest'
+      responses:
+        '200':
+          description: Equipements du parking mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Requête invalide – Erreur de validation des données.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié – L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé – L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur – Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/space/{id}/types:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Définir et mettre à jour les types de places
+      description: |
+        Permet à un administrateur de définir ou modifier les types de places disponibles 
+        (PMR, famille, électriques, moto, vélo) et leur nombre.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: car
+              required:
+                - type
+      responses:
+        '200':
+          description: Equipements du parking mis à jour avec succès.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/v2/parkings/{id}/space/{id}/area:
+    patch:
+      tags:
+        - Gestionnaire
+      summary: Gérer la Topologie des zones et places
+      description: |
+        Permet à un administrateur de structurer un parking en zones (A, B, C...) et niveaux.
+        Utile pour un guidage précis des usagers.
+      security:
+        - ApiKeyAuth: [X-API-KEY]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topology'
+      responses:
+        '200':
+          description: Topologie mise à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parking'
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Non authentifié - L’utilisateur n’est pas vérifié.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Accès refusé - L’utilisateur n’est pas autorisé à utiliser cette ressource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Parking introuvable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Erreur interne du serveur - Une erreur inattendue est survenue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+components:
+  securitySchemes:
+      ApiKeyAuth: # arbitrary name for the security scheme
+        type: apiKey
+        in: header # can be "header", "query" or "cookie"
+        name: X-API-KEY # name of the header, query parameter or cookie
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+    ParkingAvailability:
+      type: object
+      additionalProperties: false
+      description: >
+        État d’occupation d’un parking à un instant donné, éventuellement
+        pour un type de place spécifique (via le paramètre `spaceType`).
+      properties:
+        parking:
+          $ref: '#/components/schemas/Parking'
+        available:
+          type: integer
+          minimum: 0
+          description: Nombre de places disponibles.
+          example: 45
+        occupied:
+          type: integer
+          minimum: 0
+          description: Nombre de places occupées.
+          example: 165
+        capacity:
+          type: integer
+          minimum: 0
+          description: Capacité totale du parking (les places fermées temporairement n'apparaissent pas).
+          example: 210
+      required:
+        - available
+        - occupied
+        - capacity
+
+    ParkingSpaceType:
+      type: string
+      description: Type de place de stationnement.
+      enum:
+        - car
+        - e_car
+        - disabled
+        - truck
+        - bike
+        - motorcycle
+        - bus
+        - van
+      default: car
+
+    Parking:
+      required:
+        - id
+        - name
+        - address
+        - information
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Indigo
+        address:
+          $ref: '#/components/schemas/Address'
+        information:
+          $ref: '#/components/schemas/ParkingInfo'
+
+    Address:
+      type: object
+      required:
+        - street
+        - city
+        - postalCode
+        - country
+      properties:
+        street:
+          type: string
+          example: "10 rue de la paix"
+        postalCode:
+          type: string
+          example: "75001"
+        city:
+          type: string
+          example: "Paris"
+        country:
+          type: string
+          example: "France"
+        position:
+          $ref: '#/components/schemas/Position'
+
+    Space:
+      type: object
+      required:
+        - id
+        - type
+        - tempClosedSpace
+      properties:
+        id:
+          type: integer
+          example: 42
+        type:
+          $ref: '#/components/schemas/ParkingSpaceType'
+        tempClosedSpace:
+          type: boolean
+          example: true
+        topology:
+          $ref: '#/components/schemas/Topology'
+
+    UserPosition:
+      type: object
+      required:
+        - vehicle
+        - position
+        - radius
+      properties:
+        vehicle:
+          $ref: '#/components/schemas/ParkingSpaceType'
+        position:
+          $ref: '#/components/schemas/Position'
+        radius:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 5000
+          example: 500
+          description: Le rayon de recherche en mètres autour du point donné.
+          
+    PredictionRequestArounds:
+      type: object
+      required:
+        - userPosition
+        - targetDate
+      properties:
+        userPosition:
+          $ref: '#/components/schemas/UserPosition'
+        targetDate:
+          type: string
+          format: date-time
+          example: '2025-10-19T19:35:00+02:00'
+          description: Date et heure utilisées pour la prédiction des disponibilités.
+          
+    PredictionRequestParking:
+      type: object
+      required:
+        - targetDate
+        - vehicle
+      properties:
+        vehicle:
+          $ref: '#/components/schemas/ParkingSpaceType'
+        targetDate:
+          type: string
+          format: date-time
+          example: '2025-10-19T19:35:00+02:00'
+          description: Date et heure utilisées pour la prédiction des disponibilités.
+
+
+    Position:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 48.8600
+        longitude:
+          type: number
+          format: float
+          example: 2.3330
+
+    ParkingInfo:
+      type: object
+      required:
+        - places
+      properties:
+        price:
+          type: integer
+          format: int64
+          example: 2
+        places:
+          type: array
+          items:
+            $ref: '#/components/schemas/Space'
+        Equipments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Equipment'
+
+    Equipment:
+      type: string
+      enum:
+        - Toilets
+        - Elevator
+        - Video surveillance
+        - EV charging station
+        - Bike station
+        - Motorcycle station
+        - Disabled
+
+    EquipmentRequest:
+      type: object
+      required:
+        - equipments
+      properties:
+        equipments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Equipment'
+
+    Topology:
+      type: object
+      description: Décrit la structure spatiale d’une place dans le parking.
+      properties:
+        zone:
+          type: string
+          example: "Zone A"
+          description: Zone du parking où se trouve la place.
+        niveau:
+          type: integer
+          example: 1
+          description: Niveau ou étage du parking.
+        position:
+          $ref: '#/components/schemas/Position'
+
+
+    ParkingPrediction:
+      required:
+        - id
+        - name
+        - address
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: Indigo
+        address:
+          $ref: '#/components/schemas/Address'
+          
+    ParkingAvailabilityPrediction:
+      type: object
+      additionalProperties: false
+      description: >
+        État d’occupation des parkings dans une zone à un instant donné, éventuellement
+        pour un type de place spécifique (via le paramètre `spaceType`).
+      properties:
+        parking:
+          $ref: '#/components/schemas/ParkingPrediction'
+        available:
+          type: integer
+          minimum: 0
+          description: Nombre de places disponibles.
+          example: 45
+        occupied:
+          type: integer
+          minimum: 0
+          description: Nombre de places occupées.
+          example: 165
+        capacity:
+          type: integer
+          minimum: 0
+          description: Capacité totale du parking (les places fermées temporairement n'apparaissent pas).
+          example: 210
+      required:
+        - parking
+        - available
+        - occupied
+        - capacity

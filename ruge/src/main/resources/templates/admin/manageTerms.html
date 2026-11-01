@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Charte | RUGE</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="admin-layout">
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('terms')}"></div>
+
+    <main class="admin-container">
+        <header class="page-header">
+            <h1>Administration - Charte</h1>
+        </header>
+
+        <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+
+        <section class="card">
+            <h2 class="section-title" style="font-size: 20px;">Texte public de la charte</h2>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">
+                Le contenu ci-dessous est affiche sur la page publique <strong>/terms</strong>.
+            </p>
+
+            <form th:action="@{/admin/terms}" method="post">
+                <div class="form-group">
+                    <label for="termsContent">Contenu de la charte</label>
+                    <textarea id="termsContent"
+                              name="termsContent"
+                              rows="22"
+                              required
+                              th:text="${termsContent}"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">Enregistrer la charte</button>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('adminSidebar');
+        sidebar.classList.toggle('collapsed');
+    }
+</script>
+</body>
+</html>

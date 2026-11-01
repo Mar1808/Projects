@@ -1,0 +1,77 @@
+services:
+  app-ruge:
+    build: .
+    container_name: ruge-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama-service:11434
+      - APP_DB_PROFILE=local
+      - LOCAL_DB_HOST=postgres-local
+      - LOCAL_DB_PORT=5432
+      - LOCAL_DB_NAME=ruge
+      - LOCAL_DB_USERNAME=ruge
+      - LOCAL_DB_PASSWORD=${LOCAL_DB_PASSWORD:-ruge}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      postgres-local:
+        condition: service_healthy
+      ollama-service:
+        condition: service_started
+
+  postgres-local:
+    image: pgvector/pgvector:pg16
+    container_name: ruge-postgres-local
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ruge
+      - POSTGRES_USER=ruge
+      - POSTGRES_PASSWORD=${LOCAL_DB_PASSWORD:-ruge}
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ruge -d ruge" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ollama-service:
+    image: ollama/ollama:latest
+    container_name: ruge-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "/bin/ollama serve & 
+       pid=$$! && 
+       sleep 5 && 
+       ollama list | grep -q llama3 || ollama pull llama3 && 
+       ollama list | grep -q mxbai-embed-large || ollama pull mxbai-embed-large && 
+       wait $$pid"
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: ruge-stripe-cli
+    profiles:
+      - stripe
+    env_file:
+      - .env
+    command:
+      - listen
+      - --api-key
+      - ${STRIPE_SECRET_KEY}
+      - --forward-to
+      - ${STRIPE_CLI_FORWARD_TO:-http://app-ruge:8080/stripe/webhook}
+    depends_on:
+      app-ruge:
+        condition: service_started
+
+volumes:
+  ollama_data:
+  postgres_local_data:

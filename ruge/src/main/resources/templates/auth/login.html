@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RUGE - Se connecter</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+<main class="auth-shell">
+    <div th:replace='~{fragments/menu :: topMenu}'></div>
+    <section class="auth-content">
+        <h1>Connexion</h1>
+
+        <div th:if="${isAuthenticated}" class="alert alert-success">
+            Vous êtes déjà connecté.
+        </div>
+
+        <div th:if="${!isAuthenticated}" class="auth-wrap">
+            <form th:action="@{/login}" method="post" class="auth-form">
+                <div th:if="${param.error}" class="alert alert-error">Identifiants invalides.</div>
+                <div th:if="${param.banned}" class="alert alert-error">Votre compte a été banni de la plateforme. L'accès vous est refusé.</div>
+                <div th:if="${param.logout}" class="alert alert-success">Vous avez été déconnecté.</div>
+
+                <div class="form-panel">
+                    <div class="form-group">
+                        <label for="email" class="sr-only">Adresse email</label>
+                        <div class="field-bar">
+                            <span class="field-prefix" aria-hidden="true">
+                                <img th:src="@{/images/icon-mail.png}" alt="" class="field-icon">
+                            </span>
+                            <input type="email" id="email" name="email" placeholder="Adresse email" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="sr-only">Mot de passe</label>
+                        <div class="field-bar">
+                            <span class="field-prefix" aria-hidden="true">
+                                <img th:src="@{/images/icon-lock.png}" alt="" class="field-icon">
+                            </span>
+                            <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+                        </div>
+                    </div>
+                </div>
+
+                <a th:href="@{/forgot-password}" class="forgot-btn">Mot de passe oublié ?</a>
+
+                <p class="signup-copy">
+                    Pas encore de compte ? <a th:href="@{/register}">S'inscrire</a>
+                </p>
+
+                <div class="action-stack">
+                    <button type="submit" class="auth-btn">Se connecter</button>
+                    <a th:href="@{/oauth2/authorization/gitlab}" class="gitlab-btn">Se connecter via GitLab</a>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${isAuthenticated}" class="logout-wrap">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="auth-btn">Se déconnecter</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

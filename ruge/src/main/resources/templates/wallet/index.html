@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/recipes.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+</head>
+<body>
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="container">
+    <div class="card">
+        <h1>Mon wallet</h1>
+        <p>
+            Solde actuel:
+            <strong th:text="${walletBalance} + ' EUR'">0.00 EUR</strong>
+        </p>
+    </div>
+
+    <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+    <div th:if="${infoMessage}" class="card" th:text="${infoMessage}"></div>
+    <div th:if="${connectErrorMessage}" class="card" th:text="${connectErrorMessage}"></div>
+    <div th:if="${cancelled}" class="card">Paiement annule.</div>
+    <div th:if="${connectReturn}" class="card">Retour Stripe Connect recu. Verifiez le statut de votre compte bancaire ci-dessous.</div>
+    <div th:if="${connectRefresh}" class="card">Session Stripe Connect expiree. Relancez la connexion bancaire.</div>
+
+    <div class="card">
+        <h2 class="section-title">Recharger votre wallet</h2>
+        <form th:action="@{/wallet/checkout}" method="post">
+            <div class="form-group">
+                <label for="amount">Montant (EUR)</label>
+                <input id="amount"
+                       name="amount"
+                       type="number"
+                       th:min="${paymentMinAmount}"
+                       th:max="${paymentMaxAmount}"
+                       step="0.01"
+                       placeholder="10.00"
+                       required>
+            </div>
+            <button type="submit" class="btn-primary">Recharger votre wallet</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Retirer vers votre banque</h2>
+        <p th:if="${connectStatus != null and connectStatus.bankAccountReady}" class="text-success">
+            Votre compte Stripe Connect est pret pour les virements.
+        </p>
+        <p th:if="${connectStatus != null and connectStatus.accountLinked and !connectStatus.bankAccountReady}">
+            Compte Stripe Connect lie, mais verification incomplete. Terminez l'onboarding.
+        </p>
+        <p th:if="${connectStatus == null or !connectStatus.accountLinked}">
+            Aucun compte bancaire connecte. Connectez votre compte Stripe pour recevoir vos gains.
+        </p>
+
+        <form th:action="@{/wallet/connect/onboard}" method="post">
+            <button type="submit" class="btn-primary">
+                <span th:if="${connectStatus == null or !connectStatus.accountLinked}">Connecter mon compte bancaire</span>
+                <span th:if="${connectStatus != null and connectStatus.accountLinked}">Mettre a jour mon compte bancaire</span>
+            </button>
+        </form>
+
+        <form th:action="@{/wallet/withdraw}" method="post" style="margin-top: 1rem;">
+            <div class="form-group">
+                <label for="withdraw-amount">Montant a retirer (EUR)</label>
+                <input id="withdraw-amount"
+                       name="amount"
+                       type="number"
+                       th:min="${paymentMinAmount}"
+                       th:max="${paymentMaxAmount}"
+                       step="0.01"
+                       placeholder="10.00"
+                       required>
+            </div>
+            <button type="submit"
+                    class="btn-primary"
+                    th:disabled="${connectStatus == null or !connectStatus.bankAccountReady}">
+                Retirer vers mon compte bancaire
+            </button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Redistributions recues (origine des fonds)</h2>
+
+        <div class="table-responsive" th:if="${redistributionDetails != null and !#lists.isEmpty(redistributionDetails)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Recette source</th>
+                    <th>Votre recette beneficiaire</th>
+                    <th>Montant</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="detail : ${redistributionDetails}">
+                    <td th:text="${#temporals.format(detail.date, 'yyyy-MM-dd HH:mm')}">2026-03-07 14:30</td>
+                    <td>
+                        <a th:if="${detail.sourceRecipeId != null}"
+                           th:href="@{/recipes/{id}(id=${detail.sourceRecipeId})}"
+                           th:text="${detail.sourceRecipeName != null ? detail.sourceRecipeName : 'Recette #' + detail.sourceRecipeId}">
+                            Recette source
+                        </a>
+                        <span th:if="${detail.sourceRecipeId == null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${detail.beneficiaryRecipeId != null}"
+                           th:href="@{/recipes/{id}(id=${detail.beneficiaryRecipeId})}"
+                           th:text="${detail.beneficiaryRecipeName != null ? detail.beneficiaryRecipeName : 'Recette #' + detail.beneficiaryRecipeId}">
+                            Recette beneficiaire
+                        </a>
+                        <span th:if="${detail.beneficiaryRecipeId == null}">-</span>
+                    </td>
+                    <td th:text="${detail.amount + ' EUR'}">0.00 EUR</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${redistributionDetails == null or #lists.isEmpty(redistributionDetails)}">
+            Aucune redistribution recue pour le moment.
+        </p>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Mes SuperLikes</h2>
+
+        <div class="table-responsive" th:if="${superLikeSent != null and !#lists.isEmpty(superLikeSent)}">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Bénéficiaire</th>
+                    <th>Recette</th>
+                    <th>Montant</th>
+                    <th>Promotion Appliquée</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="detail : ${superLikeSent}">
+                    <td th:text="${#temporals.format(detail.date, 'yyyy-MM-dd HH:mm')}">2026-03-07 14:30</td>
+                    <td>
+                        <a th:if="${detail.receiver != null}"
+                           th:href="@{/users/{id}(id=${detail.receiver.id})}"
+                           th:text="${detail.receiver.name != null ? detail.receiver.name : 'Utilisateur #' + detail.receiver.id}">
+                            Expéditeur
+                        </a>
+                        <span th:if="${detail.receiver == null}">-</span>
+                    </td>
+                    <td>
+                        <a th:if="${detail.recipe != null}"
+                           th:href="@{/recipes/{id}(id=${detail.recipe.id})}"
+                           th:text="${detail.recipe.name != null ? detail.recipe.name : 'Recette #' + detail.recipe.id}">
+                            Recette source
+                        </a>
+                        <span th:if="${detail.recipe == null}">-</span>
+                    </td>
+                    <td th:text="${detail.amount + ' EUR'}">0.00 EUR</td>
+                    <td>
+                        <span th:if="${detail.promotion != null}" th:text="${detail.promotion.id}"></span>
+                        <span th:if="${detail.promotion == null}">-</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p th:if="${superLikeSent == null or #lists.isEmpty(superLikeSent)}">
+            Aucun Super Like envoyé pour le moment.
+        </p>
+    </div>
+</div>
+</body>
+</html>

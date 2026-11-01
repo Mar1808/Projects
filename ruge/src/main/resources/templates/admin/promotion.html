@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin - Promotions | RUGE</title>
+  <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+  <link rel="stylesheet" th:href="@{/css/common.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<div class="admin-layout">
+
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('promotions')}"></div>
+
+  <main class="admin-container">
+    <header class="page-header">
+      <h1>Administration — Promotions</h1>
+    </header>
+
+    <div th:if="${successMessage}" class="alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert-error" th:text="${errorMessage}"></div>
+
+    <h2 class="section-title" style="margin-top: 0; font-size: 20px;">Mettre en place une promotion</h2>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+      <div class="table-card" style="padding: 20px; flex: 1; min-width: 450px;">
+        <h3 style="margin-top: 0; font-size: 16px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Promotions Classiques (Likes / IA)</h3>
+        <form id="standardPromoForm" th:action="@{/admin/promotions}" method="post" style="display: flex; gap: 15px; flex-direction: column; align-items: flex-start;">
+
+          <div style="width: 100%;">
+            <label for="standardType" style="font-weight: bold; display: block; margin-bottom: 5px;">Type de promo</label>
+            <select id="standardType" name="type" class="admin-input" required style="width: 100%;">
+              <option value="SUPERLIKE">Super-Like (Réduction)</option>
+              <option value="PROMO_AI">Recherche IA</option>
+            </select>
+          </div>
+
+          <div style="width: 100%;">
+            <label for="standardPromoPrice" style="font-weight: bold; display: block; margin-bottom: 5px;">Prix promo (€)</label>
+            <input type="number" step="0.01" min="0" id="standardPromoPrice" name="promoPrice"
+                   class="admin-input" placeholder="Ex: 0.50" required style="width: 100%;"
+                   onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46 || event.charCode == 44)">
+          </div>
+
+          <div style="width: 100%;">
+            <label for="standardStartDate" style="font-weight: bold; display: block; margin-bottom: 5px;">Début</label>
+            <input type="datetime-local" id="standardStartDate" name="startDate" class="admin-input" required style="width: 100%;">
+          </div>
+
+          <div style="width: 100%;">
+            <label for="standardEndDate" style="font-weight: bold; display: block; margin-bottom: 5px;">Fin</label>
+            <input type="datetime-local" id="standardEndDate" name="endDate" class="admin-input" required style="width: 100%;">
+          </div>
+
+          <div style="margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="background-color: #d1b88e; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; color: white; font-weight: bold;">
+              Planifier la promotion classique
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-card" style="padding: 20px; flex: 1; min-width: 450px;">
+        <h3 style="margin-top: 0; font-size: 16px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Promotions de Fidélité (Like Gratuit)</h3>
+        <form id="freeLikePromoForm" th:action="@{/admin/promotions}" method="post" style="display: flex; gap: 15px; flex-direction: column; align-items: flex-start;">
+
+          <div style="width: 100%;">
+            <label for="freeLikeTypeLabel" style="font-weight: bold; display: block; margin-bottom: 5px;">Type de promo</label>
+            <input type="text" id="freeLikeTypeLabel" value="Super-Like (Xème offert)" readonly class="admin-input" style="width: 100%; background-color: #f9f9f9; color: #555;">
+            <input type="hidden" id="freeLikeType" name="type" value="FREE_LIKE">
+          </div>
+
+          <div style="width: 100%;">
+            <label for="freeLikeInterval" style="font-weight: bold; display: block; margin-bottom: 5px;">Quel like sera gratuit ? (ex: 5 pour le 5ème)</label>
+            <input type="number" step="1" min="2" id="freeLikeInterval" name="promoPrice"
+                   class="admin-input" placeholder="Ex: 5" required style="width: 100%;">
+            <small style="color: #666; font-size: 12px;">La valeur doit être de 2 minimum.</small>
+          </div>
+
+          <div style="width: 100%;">
+            <label for="freeLikeStartDate" style="font-weight: bold; display: block; margin-bottom: 5px;">Début</label>
+            <input type="datetime-local" id="freeLikeStartDate" name="startDate" class="admin-input" required style="width: 100%;">
+          </div>
+
+          <div style="width: 100%;">
+            <label for="freeLikeEndDate" style="font-weight: bold; display: block; margin-bottom: 5px;">Fin</label>
+            <input type="datetime-local" id="freeLikeEndDate" name="endDate" class="admin-input" required style="width: 100%;">
+          </div>
+
+          <div style="margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="background-color: #d1b88e; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; color: white; font-weight: bold;">
+              Planifier la promotion fidélité
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    <th:block th:with="
+        standardPromos=${promotions.?[type != 'FREE_LIKE']},
+        freeLikePromos=${promotions.?[type == 'FREE_LIKE']}">
+
+      <h2 class="section-title" style="margin-top: 40px; font-size: 20px;">Promotions Classiques (Réductions)</h2>
+
+      <div th:if="${#lists.isEmpty(standardPromos)}" class="empty-state">
+        <h2>Aucune promotion classique configurée pour le moment.</h2>
+      </div>
+
+      <div th:if="${!#lists.isEmpty(standardPromos)}" class="table-card">
+        <table class="admin-table">
+          <thead>
+          <tr>
+            <th>Type</th>
+            <th>Prix Promo</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="i : ${#numbers.sequence(standardPromos.size() - 1, 0, -1)}" th:with="promo=${standardPromos[i]}">
+            <td th:text="${promo.type}">SUPERLIKE</td>
+            <td th:text="${promo.promoPrice + ' €'}">0.50 €</td>
+            <td th:text="${#temporals.format(promo.startDate, 'dd/MM/yyyy HH:mm')}">15/03/2026 10:00</td>
+            <td th:text="${#temporals.format(promo.endDate, 'dd/MM/yyyy HH:mm')}">20/03/2026 23:59</td>
+            <td>
+              <span th:if="${promo.isActive()}" class="badge badge-active">ACTIVE</span>
+              <span th:if="${!promo.isActive()}" class="badge badge-banned">INACTIVE</span>
+            </td>
+            <td class="text-end actions-cell">
+              <form th:action="@{/admin/promotions/{id}/delete(id=${promo.id})}" method="post" style="display: inline-block;">
+                <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Es-tu sûr de vouloir supprimer cette promotion ?');">Supprimer</button>
+              </form>
+              <a th:href="@{/admin/promotion/{id}/modify(id=${promo.id})}" class="btn-sm btn-outline" style="margin-right: 8px;">
+                Modifier
+              </a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title" style="margin-top: 40px; font-size: 20px;">Promotions de Fidélité (Like Gratuit)</h2>
+
+      <div th:if="${#lists.isEmpty(freeLikePromos)}" class="empty-state">
+        <h2>Aucune promotion de fidélité configurée pour le moment.</h2>
+      </div>
+
+      <div th:if="${!#lists.isEmpty(freeLikePromos)}" class="table-card">
+        <table class="admin-table">
+          <thead>
+          <tr>
+            <th>Type</th>
+            <th>Règle appliquée</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="i : ${#numbers.sequence(freeLikePromos.size() - 1, 0, -1)}" th:with="promo=${freeLikePromos[i]}">
+            <td th:text="${promo.type}">FREE_LIKE</td>
+            <td th:text="'Le ' + ${#numbers.formatDecimal(promo.promoPrice, 0, 0)} + 'ème like offert'">Le 5ème like offert</td>
+            <td th:text="${#temporals.format(promo.startDate, 'dd/MM/yyyy HH:mm')}">15/03/2026 10:00</td>
+            <td th:text="${#temporals.format(promo.endDate, 'dd/MM/yyyy HH:mm')}">20/03/2026 23:59</td>
+            <td>
+              <span th:if="${promo.isActive()}" class="badge badge-active">ACTIVE</span>
+              <span th:if="${!promo.isActive()}" class="badge badge-banned">INACTIVE</span>
+            </td>
+            <td class="text-end actions-cell">
+              <form th:action="@{/admin/promotions/{id}/delete(id=${promo.id})}" method="post" style="display: inline-block;">
+                <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Es-tu sûr de vouloir supprimer cette promotion ?');">Supprimer</button>
+              </form>
+              <a th:href="@{/admin/promotion/{id}/modify(id=${promo.id})}" class="btn-sm btn-outline" style="margin-right: 8px;">
+                Modifier
+              </a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </th:block>
+
+  </main>
+</div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    sidebar.classList.toggle('collapsed');
+  }
+
+  // Vérifications et contraintes dynamiques sur les dates
+  function setupDateConstraints(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const startInput = form.querySelector('input[name="startDate"]');
+    const endInput = form.querySelector('input[name="endDate"]');
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const minDateTime = now.toISOString().slice(0, 16);
+    startInput.min = minDateTime;
+
+    startInput.addEventListener('change', function() {
+      if (startInput.value) {
+        endInput.min = startInput.value;
+
+        if (endInput.value && endInput.value <= startInput.value) {
+          endInput.value = '';
+        }
+      }
+    });
+  }
+
+  setupDateConstraints('standardPromoForm');
+  setupDateConstraints('freeLikePromoForm'); // Mis à jour avec le nouvel ID
+
+  function validateForm(event) {
+    const form = event.target;
+    const startDateInput = form.querySelector('input[name="startDate"]').value;
+    const endDateInput = form.querySelector('input[name="endDate"]').value;
+    const priceInput = form.querySelector('input[name="promoPrice"]')?.value;
+
+    if (startDateInput && endDateInput) {
+      const start = new Date(startDateInput);
+      const end = new Date(endDateInput);
+
+      if (end <= start) {
+        event.preventDefault();
+        alert("La date de fin doit être strictement supérieure à la date de début.");
+        return;
+      }
+    }
+
+    if (priceInput && priceInput.includes(',')) {
+      form.querySelector('input[name="promoPrice"]').value = priceInput.replace(',', '.');
+    }
+  }
+
+  document.getElementById('standardPromoForm').addEventListener('submit', validateForm);
+  document.getElementById('freeLikePromoForm').addEventListener('submit', validateForm); // Mis à jour avec le nouvel ID
+</script>
+
+</body>
+</html>

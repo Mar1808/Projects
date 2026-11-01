@@ -1,0 +1,95 @@
+<div class="admin-container">
+  <h2>Gestion des parkings (Admin)</h2>
+
+  <div class="api-key-section">
+    <!-- <label for="apiKey">Clé API :</label>
+    <input id="apiKey" [(ngModel)]="apiKey" placeholder="X-API-KEY" /> -->
+    <button (click)="loadParkings()" [disabled]="loadingList">{{ loadingList ? 'Chargement...' : 'Charger les parkings' }}</button>
+  </div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <section class="create-section">
+    <h3>Créer un parking</h3>
+    <form class="create-form" (ngSubmit)="submitCreateParking()">
+      <div>
+        <label>Nom *</label>
+        <input [(ngModel)]="newParking.name" name="name" required />
+      </div>
+      <div>
+        <label>Rue *</label>
+        <input [(ngModel)]="newParking.address.street" name="street" required />
+      </div>
+      <div>
+        <label>Ville *</label>
+        <input [(ngModel)]="newParking.address.city" name="city" required />
+      </div>
+      <div>
+        <label>Code postal</label>
+        <input [(ngModel)]="newParking.address.postalCode" name="postalCode" />
+      </div>
+      <div>
+        <label>Pays</label>
+        <input [(ngModel)]="newParking.address.country" name="country" />
+      </div>
+      <div>
+        <label>Prix (€/h)</label>
+        <input type="number" [(ngModel)]="newParking.information.price" name="price" min="0" />
+      </div>
+      <div class="equipments-field" style="grid-column:1/-1;">
+        <label>Équipements</label>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+          <ng-container *ngFor="let eq of equipmentEnum let i = index">
+            <label style="display:flex;align-items:center;gap:.5rem;">
+              <input type="checkbox"
+                [checked]="equipmentChecked[i]"
+                (change)="checked(i)" />
+              {{ eq }}
+            </label>
+          </ng-container>
+        </div>
+      </div>
+      <fieldset>
+        <legend>Places</legend>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+          <div>
+            <label>Nombre de places</label>
+            <input type="number" [(ngModel)]="spacesCount" name="spacesCount" min="0" (change)="refreshSpaces()" />
+          </div>
+          <div>
+            <label>Tout fermer temporairement ?</label>
+            <input type="checkbox" [(ngModel)]="tempClosedAll" name="tempClosedAll" (change)="refreshSpaces()" />
+          </div>
+        </div>
+        <div class="spaces-config" *ngIf="newParking.information.places.length > 0">
+          <div class="space-item" *ngFor="let sp of newParking.information.places; let i = index">
+            <label>Place #{{ sp.topology?.zone }}</label>
+            <select [(ngModel)]="sp.type" name="spaceType{{i}}" (change)="updateSpaceType(i, sp.type)">
+              <option *ngFor="let t of spaceTypes" [value]="t">{{ t }}</option>
+            </select>
+            <div>
+              <label>Fermée ?</label>
+              <input type="checkbox" [(ngModel)]="sp.tempClosedSpace" name="tempClosed{{i}}" />
+            </div>
+          </div>
+        </div>
+      </fieldset>
+      <button type="submit" [disabled]="creating">{{ creating ? 'Création...' : 'Créer le parking' }}</button>
+      <button type="button" class="secondary" (click)="resetForm()" [disabled]="creating">Réinitialiser</button>
+    </form>
+  </section>
+
+  <div class="parkings-list">
+    <h3>Liste des parkings</h3>
+    <ul>
+      <li *ngFor="let parking of parkings" [routerLink]="['/admin/parking/edit', parking.id]">
+        <strong>{{ parking.name }}</strong>
+        <div style="font-size:.8rem;color:#555;">{{ parking.address.street }}, {{ parking.address.city }} ({{ parking.address.country || '–' }})</div>
+        <div style="font-size:.75rem;">Places: {{ parking.information.places.length || 0 }} | Équipements: {{ parking.information.equipments || 0 }}</div>
+      </li>
+    </ul>
+    <p *ngIf="!parkings.length && !loadingList" style="color:#777; font-style:italic;">Aucun parking chargé.</p>
+  </div>
+</div>
+
+

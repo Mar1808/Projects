@@ -1,0 +1,14 @@
+  .admin-container { max-width: 1000px; margin: auto; padding: 2rem; }
+  .api-key-section { margin-bottom: 1rem; display:flex; gap:.5rem; align-items:center; }
+  .error { color: #b00020; margin: .75rem 0; }
+  .parkings-list ul { list-style: none; padding: 0; margin:0; }
+  .parkings-list li { padding: 0.5rem .75rem; border-bottom: 1px solid #ddd; display:flex; justify-content:space-between; align-items:center; }
+  form.create-form { display:grid; gap:.75rem; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); background:#f9f9f9; padding:1rem; border-radius:8px; margin-top:1rem; }
+  form.create-form fieldset { border:1px solid #ddd; padding:.75rem; border-radius:6px; grid-column:1/-1; }
+  form.create-form button[type=submit] { grid-column:1/-1; justify-self:start; }
+  .spaces-config { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .space-item { background:#eef; padding:.5rem .75rem; border-radius:6px; display:flex; flex-direction:column; gap:.25rem; }
+  label { font-weight:600; font-size:.85rem; }
+  input, select { padding:.4rem .5rem; border:1px solid #ccc; border-radius:4px; width:100%; }
+  h3 { margin-top:2rem; }
+  .actions { display:flex; gap:.5rem; }

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recettes RUGE</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/recipes.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/logo-ruge.png}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .rr-card-status-icons {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            z-index: 2; /* Pour passer au-dessus de l'image */
+        }
+        .rr-status-icon {
+            font-size: 1.2rem;
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.9); /* Ombre blanche pour lisibilité */
+        }
+        /* Couleurs basées sur ta charte detail.html */
+        .rr-icon-liked { color: #3498db; }    /* Bleu Like */
+        .rr-icon-superliked { color: #dc3545; } /* Rouge SuperLike */
+        .rr-icon-followed { color: #f1c40f; }   /* Jaune Follow/Enregistrer */
+    </style>
+</head>
+<body>
+<div th:replace='~{fragments/menu :: topMenu}'></div>
+
+<main class="container">
+
+    <header class="page-header">
+        <div>
+            <h1>Mes Recettes</h1>
+            <p class="page-header-sub">Explorez, créez, partagez.</p>
+        </div>
+        <a sec:authorize="isAuthenticated()" th:href="@{/recipes/create}" class="rr-btn rr-btn-create" style="text-decoration:none">
+            <span class="rr-plus-icon"><i class="fa-solid fa-plus"></i></span>
+            Nouvelle recette
+        </a>
+    </header>
+
+    <div th:if="${successMessage}" class="alert-success">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMessage}"></span>
+    </div>
+
+    <section class="search-section">
+        <form th:action="@{/recipes/search}" method="get" class="search-bar">
+            <input type="hidden" name="sourcePage" value="my-recipes">
+            <div class="input-wrapper">
+                <div class="search-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <label>
+                        <input type="text"
+                               name="query"
+                               th:value="${query}"
+                               placeholder="Un ingrédient, une envie… (ex : salade fraîche)"
+                               class="search-input">
+                    </label>
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" name="type" value="standard" class="btn-search">
+                    <i class="fa-solid fa-magnifying-glass"></i> Rechercher
+                </button>
+
+                <a th:if="${query != null}" th:href="@{/recipes}" class="btn-reset">
+                    <i class="fa-solid fa-xmark"></i> Réinitialiser
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <h2 th:if="${query != null}" class="search-results-label">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        Résultats pour : « <span th:text="${query}"></span> »
+        <span th:if="${isAiSearch}" class="badge-ia">Moteur IA</span>
+    </h2>
+
+    <section th:if="${recipes != null and !#lists.isEmpty(recipes)}" class="recipes-grid">
+        <a th:each="recipe : ${recipes}"
+           th:href="@{/recipes/{id}(id=${recipe.id})}"
+           class="recipe-card">
+
+            <div class="recipe-image-wrap" style="position: relative;">
+
+                <div sec:authorize="isAuthenticated()" class="rr-card-status-icons">
+                    <i th:if="${likedRecipesMap != null and likedRecipesMap.get(recipe.id) == true}"
+                       class="fa-solid fa-thumbs-up rr-status-icon rr-icon-liked"
+                       title="Vous aimez cette recette"></i>
+
+                    <i th:if="${superLikedRecipesMap != null and superLikedRecipesMap.get(recipe.id) == true}"
+                       class="fa-solid fa-heart rr-status-icon rr-icon-superliked"
+                       title="Vous avez super-liké cette recette"></i>
+
+                    <i th:if="${followedRecipesMap != null and followedRecipesMap.get(recipe.id) == true}"
+                       class="fa-solid fa-bookmark rr-status-icon rr-icon-followed"
+                       title="Recette enregistrée"></i>
+                </div>
+
+                <img th:if="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()}"
+                     th:src="${recipe.imageUrl}"
+                     th:alt="${recipe.name}"
+                     class="recipe-image"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+
+                <div th:unless="${recipe.imageUrl != null and !recipe.imageUrl.isEmpty()}"
+                     class="recipe-image recipe-image-placeholder">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+            </div>
+
+            <div class="recipe-info">
+                <p class="recipe-name" th:text="${recipe.name}">Nom de la recette</p>
+                <p class="recipe-duration">
+                    <i class="fa-regular fa-clock"></i>
+                    <span th:text="${recipe.totalDuration != null ? recipe.totalDuration : '0'}">30</span> min
+                </p>
+            </div>
+        </a>
+    </section>
+
+    <section th:if="${recipes == null or #lists.isEmpty(recipes)}" class="empty-state">
+        <div class="empty-state-icon"><i class="fa-solid fa-bowl-food"></i></div>
+        <h2>Aucun résultat trouvé</h2>
+        <p th:if="${query != null}">
+            Nous n'avons rien trouvé pour « <span th:text="${query}"></span> ».
+        </p>
+        <p th:unless="${query != null}">Commencez par créer votre première recette !</p>
+        <a sec:authorize="isAuthenticated()" th:href="@{/recipes/create}" class="btn-primary" style="margin-top:16px; display:inline-flex; gap:8px; align-items:center">
+            <i class="fa-solid fa-plus"></i> Créer une recette
+        </a>
+    </section>
+
+    <section th:if="${totalPages > 1 and !isAiSearch}" class="pagination">
+        <div class="pagination-info">
+            Page <strong th:text="${currentPage + 1}">1</strong> sur <strong th:text="${totalPages}">1</strong>
+        </div>
+
+        <div class="pagination-controls">
+            <a th:if="${query != null}"
+               th:href="@{/recipes/search(query=${query}, type='standard', page=${currentPage - 1})}"
+               th:classappend="${currentPage <= 0} ? ' disabled' : ''"
+               class="pagination-btn">
+                <i class="fa-solid fa-chevron-left"></i> Précédent
+            </a>
+            <a th:unless="${query != null}"
+               th:href="@{/recipes(page=${currentPage - 1})}"
+               th:classappend="${currentPage <= 0} ? ' disabled' : ''"
+               class="pagination-btn">
+                <i class="fa-solid fa-chevron-left"></i> Précédent
+            </a>
+
+            <div class="page-numbers">
+                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <a th:if="${query != null and (i < 3 or i >= totalPages - 3 or (i >= currentPage - 1 and i <= currentPage + 1))}"
+                       th:href="@{/recipes/search(query=${query}, type='standard', page=${i})}"
+                       th:classappend="${i == currentPage} ? ' active' : ''"
+                       th:text="${i + 1}"
+                       class="pagination-btn page-num">1</a>
+                    <a th:if="${query == null and (i < 3 or i >= totalPages - 3 or (i >= currentPage - 1 and i <= currentPage + 1))}"
+                       th:href="@{/recipes(page=${i})}"
+                       th:classappend="${i == currentPage} ? ' active' : ''"
+                       th:text="${i + 1}"
+                       class="pagination-btn page-num">1</a>
+                </th:block>
+            </div>
+
+            <a th:if="${query != null}"
+               th:href="@{/recipes/search(query=${query}, type='standard', page=${currentPage + 1})}"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+               class="pagination-btn">
+                Suivant <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            <a th:unless="${query != null}"
+               th:href="@{/recipes(page=${currentPage + 1})}"
+               th:classappend="${currentPage + 1 >= totalPages} ? ' disabled' : ''"
+               class="pagination-btn">
+                Suivant <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

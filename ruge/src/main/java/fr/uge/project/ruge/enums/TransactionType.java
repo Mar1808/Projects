@@ -1,0 +1,9 @@
+package fr.uge.project.ruge.enums;
+
+public enum TransactionType {
+    WALLET_TOPUP_STRIPE,
+    WALLET_WITHDRAWAL_STRIPE,
+    SUPERLIKE_SITE_BENEFIT,
+    SUPERLIKE_REDISTRIBUTION_RESERVE,
+    SUPERLIKE_MONTHLY_REDISTRIBUTION
+}
